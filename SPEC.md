@@ -386,7 +386,9 @@ search resolves the pattern.
 ---
 
 ### SPEC-014 — useKeyCapture Hook
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006, SPEC-002
 **Branch:** `feat/SPEC-014-key-capture-hook`
 
@@ -1312,7 +1314,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-011 | Find Motions | TODO | 1 |
 | SPEC-012 | Search Motions | TODO | 1 |
 | SPEC-013 | Motion Parser | TODO | 1 |
-| SPEC-014 | useKeyCapture Hook | TODO | 1 |
+| SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
 | SPEC-015 | useVimEngine Hook | TODO | 1 |
 | SPEC-016 | EditorBuffer Component | TODO | 2 |
 | SPEC-017 | CursorOverlay Component | TODO | 2 |

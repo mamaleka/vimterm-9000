@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { VimState, Position, VimMode } from './vim'
-import type { SuccessCondition, ChallengeDefinition, ChallengeType } from './challenge'
+import type { SuccessCondition, ChallengeDefinition } from './challenge'
 import type { PlayerState, StreakState } from './player'
-import type { Zone, Lesson } from './curriculum'
 
 describe('VimState type', () => {
   it('constructs a valid VimState', () => {

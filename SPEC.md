@@ -65,7 +65,7 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-003 — TerminalWindow and Scanlines Components
-**Status:** `TODO`
+**Status:** `REVIEW` <!-- IN PROGRESS: 2026-05-09 | REVIEW: 2026-05-09 -->
 **Depends on:** SPEC-002
 **Branch:** `feat/SPEC-003-terminal-window`
 
@@ -1299,7 +1299,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 |------|-------|--------|-------|
 | SPEC-001 | Vite Scaffold | REVIEW | 0 |
 | SPEC-002 | Tailwind CRT Theme | REVIEW | 0 |
-| SPEC-003 | TerminalWindow + Scanlines | TODO | 0 |
+| SPEC-003 | TerminalWindow + Scanlines | REVIEW | 0 |
 | SPEC-004 | Zustand Store Skeleton | REVIEW | 0 |
 | SPEC-005 | Static HomeScreen | TODO | 0 |
 | SPEC-006 | Core Vim Types | TODO | 1 |

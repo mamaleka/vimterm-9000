@@ -120,7 +120,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-005 — Static HomeScreen
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** SPEC-003, SPEC-004
 **Branch:** `feat/SPEC-005-home-screen`
 

@@ -97,15 +97,9 @@ describe('updateStreak', () => {
   })
 
   it('graceUsed resets after 7 consecutive days', () => {
-    // Start with graceUsed=true at day 1 of a new run
-    const streak = makeStreak({ current: 7, longest: 7, lastActivityDate: '2026-05-08', graceUsed: true })
-    const result = updateStreak(streak, '2026-05-09')
-    // current becomes 8 (divisible by 7? no, 8%7!=0). Actually grace resets at multiples of 7.
-    // current was 7, new is 8. 8 % 7 != 0. Grace stays true.
-    // Let's test when current=14 (multiple of 7 + 1 day)
-    const streak2 = makeStreak({ current: 13, longest: 13, lastActivityDate: '2026-05-08', graceUsed: true })
-    const result2 = updateStreak(streak2, '2026-05-09') // current becomes 14, divisible by 7
-    expect(result2.current).toBe(14)
-    expect(result2.graceUsed).toBe(false)
+    const streak = makeStreak({ current: 13, longest: 13, lastActivityDate: '2026-05-08', graceUsed: true })
+    const result = updateStreak(streak, '2026-05-09') // current becomes 14, divisible by 7
+    expect(result.current).toBe(14)
+    expect(result.graceUsed).toBe(false)
   })
 })

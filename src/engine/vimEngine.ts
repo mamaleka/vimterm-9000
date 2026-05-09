@@ -293,7 +293,7 @@ export function processKey(state: VimState, key: string): VimState {
   }
 
   // For all other motions: apply the motion `count` times.
-  let result = stateWithReset
+  let result: VimState = stateWithReset
   for (let i = 0; i < count; i++) {
     result = processKeyOnce(result, key)
   }

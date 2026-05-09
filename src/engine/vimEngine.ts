@@ -17,6 +17,8 @@ export function createInitialState(buffer: string[]): VimState {
     lastFindTill: false,
     searchPattern: null,
     lastAction: null,
+    visitedPositions: [],
+    motionCounts: {},
   }
 }
 

@@ -30,4 +30,6 @@ export interface VimState {
   lastFindTill: boolean
   searchPattern: string | null
   lastAction: Action | null
+  visitedPositions: Position[]
+  motionCounts: Record<string, number>
 }

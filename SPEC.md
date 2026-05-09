@@ -19,7 +19,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ## Phase 0 — Project Bootstrap
 
 ### SPEC-001 — Vite + React + TypeScript Scaffold
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** nothing
 **Branch:** `feat/SPEC-001-vite-scaffold`
 

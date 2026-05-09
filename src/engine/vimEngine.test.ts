@@ -139,3 +139,99 @@ describe('3×3 grid exhaustive tests', () => {
     expect(s2.cursor).toEqual({ row: 1, col: 1 })
   })
 })
+
+// --- SPEC-008 word motion tests ---
+
+describe('w — move to start of next word', () => {
+  it('moves to start of next word on same line', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey(s, 'w')
+    expect(s2.cursor.col).toBe(6) // 'w' of 'world'
+  })
+
+  it('stops at last word on line (stays at last char)', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 6 } }, 'w')
+    // at 'world', w moves to end of buffer or next line start
+    // single line: stays at last char col 10
+    expect(s2.cursor.col).toBe(10)
+  })
+
+  it('w from last word on line moves to first word on next line', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 0 } }, 'w')
+    expect(s2.cursor).toEqual({ row: 1, col: 0 })
+  })
+
+  it('w at end of buffer stays put', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'w')
+    expect(s2.cursor).toEqual({ row: 0, col: 4 })
+  })
+
+  it('w skips punctuation in "foo.bar"', () => {
+    const s = createInitialState(['foo.bar'])
+    // cursor at 0 ('f'), w should move to 3 ('.') or 4 ('b') depending on word definition
+    // Vim word: non-whitespace run; 'foo' is one word, '.bar' starts at '.'
+    const s2 = processKey(s, 'w')
+    expect(s2.cursor.col).toBe(3) // moves to '.'
+  })
+
+  it('handles multiple spaces between words', () => {
+    const s = createInitialState(['foo   bar'])
+    const s2 = processKey(s, 'w')
+    expect(s2.cursor.col).toBe(6) // 'b' of 'bar'
+  })
+
+  it('w on empty line moves to next line', () => {
+    const s = createInitialState(['', 'hello'])
+    const s2 = processKey(s, 'w')
+    expect(s2.cursor).toEqual({ row: 1, col: 0 })
+  })
+})
+
+describe('b — move to start of current/previous word', () => {
+  it('moves to start of current word when in middle', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 8 } }, 'b') // cursor in 'world'
+    expect(s2.cursor.col).toBe(6) // start of 'world'
+  })
+
+  it('moves to start of previous word when at word start', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 6 } }, 'b') // cursor at 'w'
+    expect(s2.cursor.col).toBe(0) // start of 'hello'
+  })
+
+  it('b at first word on line moves to last word on previous line', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s2 = processKey({ ...s, cursor: { row: 1, col: 0 } }, 'b')
+    expect(s2.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('b at start of buffer stays put', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, 'b')
+    expect(s2.cursor).toEqual({ row: 0, col: 0 })
+  })
+})
+
+describe('e — move to end of current/next word', () => {
+  it('moves to end of current word', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey(s, 'e') // cursor at 'h'
+    expect(s2.cursor.col).toBe(4) // 'o' of 'hello'
+  })
+
+  it('moves to end of next word when at end of current', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'e') // at end of 'hello'
+    expect(s2.cursor.col).toBe(10) // 'd' of 'world'
+  })
+
+  it('e at end of buffer stays put', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'e')
+    expect(s2.cursor).toEqual({ row: 0, col: 4 })
+  })
+})

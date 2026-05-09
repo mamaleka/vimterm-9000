@@ -226,7 +226,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-008 — Word Motions (w b e)
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-008-word-motions`
 
@@ -1317,7 +1318,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-005 | Static HomeScreen | REVIEW | 0 |
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
 | SPEC-007 | HJKL Motions | REVIEW | 1 |
-| SPEC-008 | Word Motions | TODO | 1 |
+| SPEC-008 | Word Motions | IN PROGRESS | 1 |
 | SPEC-009 | Line/File Motions | TODO | 1 |
 | SPEC-010 | Count Modifiers | TODO | 1 |
 | SPEC-011 | Find Motions | TODO | 1 |

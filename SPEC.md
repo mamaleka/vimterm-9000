@@ -195,7 +195,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-007 — HJKL Motions
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-007-hjkl-motions`
 
@@ -1305,7 +1307,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-004 | Zustand Store Skeleton | REVIEW | 0 |
 | SPEC-005 | Static HomeScreen | TODO | 0 |
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
-| SPEC-007 | HJKL Motions | TODO | 1 |
+| SPEC-007 | HJKL Motions | REVIEW | 1 |
 | SPEC-008 | Word Motions | TODO | 1 |
 | SPEC-009 | Line/File Motions | TODO | 1 |
 | SPEC-010 | Count Modifiers | TODO | 1 |

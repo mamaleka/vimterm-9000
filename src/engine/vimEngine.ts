@@ -215,7 +215,7 @@ function moveWordEnd(
   return { row, col }
 }
 
-export function processKey(state: VimState, key: string): VimState {
+function processKeyOnce(state: VimState, key: string): VimState {
   const { cursor, buffer } = state
   const lastRow = buffer.length - 1
 
@@ -271,4 +271,31 @@ export function processKey(state: VimState, key: string): VimState {
     default:
       return state
   }
+}
+
+export function processKey(state: VimState, key: string): VimState {
+  // Accumulate digits into pendingCount.
+  // '0' only joins the count when a count is already in progress;
+  // otherwise it falls through to the col-0 motion in processKeyOnce.
+  if (/^[1-9]$/.test(key) || (key === '0' && state.pendingCount !== null)) {
+    const digit = parseInt(key, 10)
+    const newCount = state.pendingCount === null ? digit : state.pendingCount * 10 + digit
+    return { ...state, pendingCount: newCount }
+  }
+
+  const count = state.pendingCount ?? 1
+  const stateWithReset = { ...state, pendingCount: null }
+
+  // G with an explicit count jumps to a specific 1-indexed line.
+  if (key === 'G' && state.pendingCount !== null) {
+    const targetRow = Math.min(count - 1, state.buffer.length - 1)
+    return { ...stateWithReset, cursor: { row: targetRow, col: 0 } }
+  }
+
+  // For all other motions: apply the motion `count` times.
+  let result = stateWithReset
+  for (let i = 0; i < count; i++) {
+    result = processKeyOnce(result, key)
+  }
+  return result
 }

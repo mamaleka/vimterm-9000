@@ -250,7 +250,7 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-009 — Line and File Motions (0 ^ $ gg G)
-**Status:** `TODO`
+**Status:** `REVIEW`
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-009-line-file-motions`
 
@@ -1316,7 +1316,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
 | SPEC-007 | HJKL Motions | REVIEW | 1 |
 | SPEC-008 | Word Motions | TODO | 1 |
-| SPEC-009 | Line/File Motions | TODO | 1 |
+| SPEC-009 | Line/File Motions | REVIEW | 1 |
 | SPEC-010 | Count Modifiers | TODO | 1 |
 | SPEC-011 | Find Motions | TODO | 1 |
 | SPEC-012 | Search Motions | TODO | 1 |

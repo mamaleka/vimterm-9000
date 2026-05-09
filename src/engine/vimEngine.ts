@@ -1,4 +1,4 @@
-import type { VimState, Position } from '../types/vim'
+import type { VimState } from '../types/vim'
 
 export function createInitialState(buffer: string[]): VimState {
   return {

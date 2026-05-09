@@ -42,7 +42,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-002 — Tailwind CSS + CRT Theme
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
 **Depends on:** SPEC-001
 **Branch:** `feat/SPEC-002-tailwind-crt-theme`
 
@@ -1295,7 +1296,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | Spec | Title | Status | Phase |
 |------|-------|--------|-------|
 | SPEC-001 | Vite Scaffold | REVIEW | 0 |
-| SPEC-002 | Tailwind CRT Theme | TODO | 0 |
+| SPEC-002 | Tailwind CRT Theme | REVIEW | 0 |
 | SPEC-003 | TerminalWindow + Scanlines | TODO | 0 |
 | SPEC-004 | Zustand Store Skeleton | TODO | 0 |
 | SPEC-005 | Static HomeScreen | TODO | 0 |

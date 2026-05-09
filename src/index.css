@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg:           #0a0f0a;
+  --color-surface:      #0d1a0d;
+  --color-border:       #1a3a1a;
+  --color-text-dim:     #2d5c2d;
+  --color-text:         #4dff4d;
+  --color-text-bright:  #80ff80;
+  --color-amber:        #ffb000;
+  --color-red:          #ff3030;
+  --color-cursor:       #4dff4d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'VT323', monospace;
+}

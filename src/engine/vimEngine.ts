@@ -255,9 +255,83 @@ function executeFindMotion(
   }
 }
 
+function searchBuffer(
+  buffer: string[],
+  pattern: string,
+  fromRow: number,
+  fromCol: number,
+  direction: 'forward' | 'backward',
+): { row: number; col: number } | null {
+  const totalRows = buffer.length
+  const all: Array<{ row: number; col: number }> = []
+
+  if (direction === 'forward') {
+    for (let r = 0; r < totalRows; r++) {
+      const line = buffer[r] ?? ''
+      for (let c = 0; c < line.length; c++) {
+        all.push({ row: r, col: c })
+      }
+    }
+  } else {
+    for (let r = totalRows - 1; r >= 0; r--) {
+      const line = buffer[r] ?? ''
+      for (let c = line.length - 1; c >= 0; c--) {
+        all.push({ row: r, col: c })
+      }
+    }
+  }
+
+  const startPredicate =
+    direction === 'forward'
+      ? (p: { row: number; col: number }) => p.row > fromRow || (p.row === fromRow && p.col > fromCol)
+      : (p: { row: number; col: number }) => p.row < fromRow || (p.row === fromRow && p.col < fromCol)
+
+  const startIdx = all.findIndex(startPredicate)
+  const ordered = startIdx !== -1 ? [...all.slice(startIdx), ...all.slice(0, startIdx)] : all
+
+  for (const pos of ordered) {
+    const line = buffer[pos.row] ?? ''
+    if (line.slice(pos.col, pos.col + pattern.length) === pattern) {
+      return pos
+    }
+  }
+  return null
+}
+
+function executeSearch(state: VimState, direction: 'forward' | 'backward'): VimState {
+  if (!state.searchPattern) return state
+  const match = searchBuffer(
+    state.buffer,
+    state.searchPattern,
+    state.cursor.row,
+    state.cursor.col,
+    direction,
+  )
+  if (!match) return state
+  return { ...state, cursor: match }
+}
+
 function processKeyOnce(state: VimState, key: string): VimState {
   const { cursor, buffer } = state
   const lastRow = buffer.length - 1
+
+  // Handle pending search accumulation (/ and ?)
+  if (
+    state.pendingMotion.length > 0 &&
+    (state.pendingMotion[0] === '/' || state.pendingMotion[0] === '?')
+  ) {
+    if (key === 'Enter') {
+      const dir = state.pendingMotion[0] === '/' ? 'forward' : 'backward'
+      const pattern = state.pendingMotion.slice(1).join('')
+      if (!pattern) return { ...state, pendingMotion: [] }
+      const newState = { ...state, searchPattern: pattern, pendingMotion: [] }
+      return executeSearch(newState, dir)
+    }
+    if (key === 'Escape') {
+      return { ...state, pendingMotion: [] }
+    }
+    return { ...state, pendingMotion: [...state.pendingMotion, key] }
+  }
 
   // Handle pending two-key find motions
   if (state.pendingMotion.length > 0) {
@@ -323,6 +397,18 @@ function processKeyOnce(state: VimState, key: string): VimState {
     case 't':
     case 'T': {
       return { ...state, pendingMotion: [key] }
+    }
+    case '/': {
+      return { ...state, pendingMotion: ['/'] }
+    }
+    case '?': {
+      return { ...state, pendingMotion: ['?'] }
+    }
+    case 'n': {
+      return executeSearch(state, 'forward')
+    }
+    case 'N': {
+      return executeSearch(state, 'backward')
     }
     case ';': {
       if (!state.lastFindChar || !state.lastFindDirection) return state

@@ -523,3 +523,111 @@ describe(', — repeat last find in opposite direction', () => {
     expect(s4.cursor.col).toBe(1)
   })
 })
+
+// --- SPEC-012 search motion tests ---
+
+describe('/ — forward search', () => {
+  it('entering / starts accumulating search pattern in pendingMotion', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '/')
+    expect(s1.pendingMotion[0]).toBe('/')
+  })
+
+  it('typing chars after / accumulates in pendingMotion', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '/')
+    const s2 = processKey(s1, 'w')
+    const s3 = processKey(s2, 'o')
+    expect(s3.pendingMotion).toEqual(['/', 'w', 'o'])
+  })
+
+  it('Enter executes search and moves cursor to first match', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '/')
+    const s2 = processKey(s1, 'w')
+    const s3 = processKey(s2, 'o')
+    const s4 = processKey(s3, 'Enter')
+    expect(s4.cursor.col).toBe(6) // 'w' of 'world'
+    expect(s4.searchPattern).toBe('wo')
+    expect(s4.pendingMotion).toEqual([])
+  })
+
+  it('sets searchPattern after Enter', () => {
+    const s = createInitialState(['foo bar baz'])
+    const s1 = processKey(s, '/')
+    const s2 = processKey(s1, 'b')
+    const s3 = processKey(s2, 'a')
+    const s4 = processKey(s3, 'Enter')
+    expect(s4.searchPattern).toBe('ba')
+  })
+
+  it('no match: cursor does not move', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '/')
+    const s2 = processKey(s1, 'z')
+    const s3 = processKey(s2, 'z')
+    const s4 = processKey(s3, 'Enter')
+    expect(s4.cursor.col).toBe(0)
+  })
+
+  it('search wraps around from end to beginning', () => {
+    const s = createInitialState(['foo bar foo'])
+    const positioned = { ...s, cursor: { row: 0, col: 8 } } // cursor at second 'foo'
+    const s1 = processKey(positioned, '/')
+    const s2 = processKey(s1, 'f')
+    const s3 = processKey(s2, 'o')
+    const s4 = processKey(s3, 'o')
+    const s5 = processKey(s4, 'Enter')
+    expect(s5.cursor.col).toBe(0) // wraps to first 'foo'
+  })
+})
+
+describe('? — backward search', () => {
+  it('? starts backward search accumulation', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '?')
+    expect(s1.pendingMotion[0]).toBe('?')
+  })
+
+  it('Enter executes backward search', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 10 } }, '?')
+    const s2 = processKey(s1, 'h')
+    const s3 = processKey(s2, 'e')
+    const s4 = processKey(s3, 'Enter')
+    expect(s4.cursor.col).toBe(0) // finds 'he' backward
+  })
+})
+
+describe('n — repeat search forward', () => {
+  it('moves to next match after n', () => {
+    const s = createInitialState(['foo bar foo'])
+    const positioned = { ...s, cursor: { row: 0, col: 4 } }
+    const s1 = processKey(positioned, '/')
+    const s2 = processKey(s1, 'f')
+    const s3 = processKey(s2, 'o')
+    const s4 = processKey(s3, 'o')
+    const s5 = processKey(s4, 'Enter') // lands at col 8 (second 'foo')
+    const s6 = processKey(s5, 'n') // wraps to first 'foo' at col 0
+    expect(s6.cursor.col).toBe(0)
+  })
+
+  it('does nothing when searchPattern is null', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, 'n')
+    expect(s2.cursor.col).toBe(0)
+  })
+})
+
+describe('N — repeat search backward', () => {
+  it('N moves to previous match', () => {
+    const s = createInitialState(['foo bar foo'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 8 } }, '/')
+    const s2 = processKey(s1, 'f')
+    const s3 = processKey(s2, 'o')
+    const s4 = processKey(s3, 'o')
+    const s5 = processKey(s4, 'Enter') // wraps to col 0
+    const s6 = processKey(s5, 'N') // N = backward, goes back to col 8
+    expect(s6.cursor.col).toBe(8)
+  })
+})

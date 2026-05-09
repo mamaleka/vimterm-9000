@@ -226,8 +226,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-008 — Word Motions (w b e)
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-008-word-motions`
 
@@ -253,7 +254,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-009 — Line and File Motions (0 ^ $ gg G)
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-009-line-file-motions`
 
@@ -422,7 +425,8 @@ and calls `onKey(key: string)` callback. Detects arrow key presses and calls
 ---
 
 ### SPEC-015 — useVimEngine Hook
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-011, SPEC-012, SPEC-013, SPEC-014
 **Branch:** `feat/SPEC-015-use-vim-engine-hook`
 
@@ -1321,14 +1325,14 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-005 | Static HomeScreen | REVIEW | 0 |
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
 | SPEC-007 | HJKL Motions | REVIEW | 1 |
-| SPEC-008 | Word Motions | IN PROGRESS | 1 |
+| SPEC-008 | Word Motions | REVIEW | 1 |
 | SPEC-009 | Line/File Motions | REVIEW | 1 |
-| SPEC-010 | Count Modifiers | TODO | 1 |
-| SPEC-011 | Find Motions | TODO | 1 |
-| SPEC-012 | Search Motions | TODO | 1 |
+| SPEC-010 | Count Modifiers | REVIEW | 1 |
+| SPEC-011 | Find Motions | REVIEW | 1 |
+| SPEC-012 | Search Motions | REVIEW | 1 |
 | SPEC-013 | Motion Parser | REVIEW | 1 |
 | SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
-| SPEC-015 | useVimEngine Hook | TODO | 1 |
+| SPEC-015 | useVimEngine Hook | IN PROGRESS | 1 |
 | SPEC-016 | EditorBuffer Component | TODO | 2 |
 | SPEC-017 | CursorOverlay Component | TODO | 2 |
 | SPEC-018 | LineNumbers + StatusBar | TODO | 2 |

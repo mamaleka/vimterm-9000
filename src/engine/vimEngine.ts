@@ -261,41 +261,33 @@ function searchBuffer(
   direction: 'forward' | 'backward',
 ): { row: number; col: number } | null {
   const totalRows = buffer.length
-  const positions: Array<{ row: number; col: number }> = []
+  const all: Array<{ row: number; col: number }> = []
 
   if (direction === 'forward') {
     for (let r = 0; r < totalRows; r++) {
       const line = buffer[r] ?? ''
       for (let c = 0; c < line.length; c++) {
-        positions.push({ row: r, col: c })
+        all.push({ row: r, col: c })
       }
-    }
-    const startIdx = positions.findIndex(
-      p => p.row > fromRow || (p.row === fromRow && p.col > fromCol),
-    )
-    if (startIdx !== -1) {
-      const before = positions.slice(0, startIdx)
-      const after = positions.slice(startIdx)
-      positions.splice(0, positions.length, ...after, ...before)
     }
   } else {
     for (let r = totalRows - 1; r >= 0; r--) {
       const line = buffer[r] ?? ''
       for (let c = line.length - 1; c >= 0; c--) {
-        positions.push({ row: r, col: c })
+        all.push({ row: r, col: c })
       }
-    }
-    const startIdx = positions.findIndex(
-      p => p.row < fromRow || (p.row === fromRow && p.col < fromCol),
-    )
-    if (startIdx !== -1) {
-      const before = positions.slice(0, startIdx)
-      const after = positions.slice(startIdx)
-      positions.splice(0, positions.length, ...after, ...before)
     }
   }
 
-  for (const pos of positions) {
+  const startPredicate =
+    direction === 'forward'
+      ? (p: { row: number; col: number }) => p.row > fromRow || (p.row === fromRow && p.col > fromCol)
+      : (p: { row: number; col: number }) => p.row < fromRow || (p.row === fromRow && p.col < fromCol)
+
+  const startIdx = all.findIndex(startPredicate)
+  const ordered = startIdx !== -1 ? [...all.slice(startIdx), ...all.slice(0, startIdx)] : all
+
+  for (const pos of ordered) {
     const line = buffer[pos.row] ?? ''
     if (line.slice(pos.col, pos.col + pattern.length) === pattern) {
       return pos

@@ -614,8 +614,9 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ## Phase 3 — Challenge System (Zone 1)
 
 ### SPEC-021 — Challenge Validator
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006, SPEC-007, SPEC-008, SPEC-009
 **Branch:** `feat/SPEC-021-challenge-validator`
 
@@ -1333,7 +1334,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-018 | LineNumbers + StatusBar | TODO | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
 | SPEC-020 | HintPanel + KeyHistory | TODO | 2 |
-| SPEC-021 | Challenge Validator | IN PROGRESS | 3 |
+| SPEC-021 | Challenge Validator | REVIEW | 3 |
 | SPEC-022 | Zone 1 Curriculum Data | REVIEW | 3 |
 | SPEC-023 | XP + Level Utils | REVIEW | 3 |
 | SPEC-024 | Streak Utils | REVIEW | 3 |

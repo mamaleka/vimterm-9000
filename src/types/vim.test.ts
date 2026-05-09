@@ -21,6 +21,8 @@ describe('VimState type', () => {
       lastFindTill: false,
       searchPattern: null,
       lastAction: null,
+      visitedPositions: [],
+      motionCounts: {},
     }
     expect(state.mode).toBe('normal')
     expect(state.cursor.row).toBe(0)

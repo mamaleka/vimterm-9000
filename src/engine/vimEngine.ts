@@ -208,9 +208,57 @@ function moveWordEnd(
   return { row, col }
 }
 
+function findCharForward(line: string, fromCol: number, ch: string, till: boolean): number | null {
+  for (let i = fromCol + 1; i < line.length; i++) {
+    if (line[i] === ch) return till ? i - 1 : i
+  }
+  return null
+}
+
+function findCharBackward(line: string, fromCol: number, ch: string, till: boolean): number | null {
+  for (let i = fromCol - 1; i >= 0; i--) {
+    if (line[i] === ch) return till ? i + 1 : i
+  }
+  return null
+}
+
+function executeFindMotion(
+  state: VimState,
+  char: string,
+  direction: 'forward' | 'backward',
+  till: boolean,
+): VimState {
+  const line = state.buffer[state.cursor.row] ?? ''
+  const newCol =
+    direction === 'forward'
+      ? findCharForward(line, state.cursor.col, char, till)
+      : findCharBackward(line, state.cursor.col, char, till)
+  if (newCol === null) {
+    return { ...state, lastFindChar: char, lastFindDirection: direction, lastFindTill: till, pendingMotion: [] }
+  }
+  return {
+    ...state,
+    cursor: { ...state.cursor, col: newCol },
+    lastFindChar: char,
+    lastFindDirection: direction,
+    lastFindTill: till,
+    pendingMotion: [],
+  }
+}
+
 export function processKey(state: VimState, key: string): VimState {
   const { cursor, buffer } = state
   const lastRow = buffer.length - 1
+
+  // Handle pending two-key find motions
+  if (state.pendingMotion.length > 0) {
+    const pending = state.pendingMotion[0]!
+    if (pending === 'f' || pending === 'F' || pending === 't' || pending === 'T') {
+      const direction: 'forward' | 'backward' = (pending === 'f' || pending === 't') ? 'forward' : 'backward'
+      const till = pending === 't' || pending === 'T'
+      return executeFindMotion(state, key, direction, till)
+    }
+  }
 
   switch (key) {
     case 'h': {
@@ -239,6 +287,21 @@ export function processKey(state: VimState, key: string): VimState {
     }
     case 'e': {
       return { ...state, cursor: moveWordEnd(buffer, cursor) }
+    }
+    case 'f':
+    case 'F':
+    case 't':
+    case 'T': {
+      return { ...state, pendingMotion: [key] }
+    }
+    case ';': {
+      if (!state.lastFindChar || !state.lastFindDirection) return state
+      return executeFindMotion(state, state.lastFindChar, state.lastFindDirection, state.lastFindTill)
+    }
+    case ',': {
+      if (!state.lastFindChar || !state.lastFindDirection) return state
+      const reversed: 'forward' | 'backward' = state.lastFindDirection === 'forward' ? 'backward' : 'forward'
+      return executeFindMotion(state, state.lastFindChar, reversed, state.lastFindTill)
     }
     default:
       return state

@@ -420,3 +420,106 @@ describe('count modifiers', () => {
     expect(s3.cursor.row).toBe(9) // 10th row = index 9
   })
 })
+
+// --- SPEC-011 find motion tests ---
+
+describe('f — find char forward on line', () => {
+  it('moves to next occurrence of char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(4) // 'o' in 'hello'
+  })
+
+  it('no match — cursor does not move', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'z')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('stores lastFindChar and direction in state', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'o')
+    expect(s2.lastFindChar).toBe('o')
+    expect(s2.lastFindDirection).toBe('forward')
+    expect(s2.lastFindTill).toBe(false)
+  })
+
+  it('finds second occurrence with count 2 via ; repeat', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'l')  // lands on col 2
+    const s3 = processKey(s2, ';')  // repeats — lands on col 3
+    expect(s3.cursor.col).toBe(3)
+  })
+})
+
+describe('F — find char backward on line', () => {
+  it('moves to previous occurrence of char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 10 } }, 'F')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(7) // 'o' in 'world'
+  })
+
+  it('stores backward direction', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'F')
+    const s2 = processKey(s1, 'e')
+    expect(s2.lastFindDirection).toBe('backward')
+  })
+})
+
+describe('t — find char forward, land one before', () => {
+  it('lands one before the found char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 't')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(3) // one before 'o' at col 4
+  })
+
+  it('stores lastFindTill as true', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 't')
+    const s2 = processKey(s1, 'o')
+    expect(s2.lastFindTill).toBe(true)
+  })
+})
+
+describe('T — find char backward, land one after', () => {
+  it('lands one after the found char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 10 } }, 'T')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(8) // one after 'o' at col 7
+  })
+})
+
+describe('; — repeat last find', () => {
+  it('repeats last f find in same direction', () => {
+    const s = createInitialState(['abcabc'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'b')  // col 1
+    const s3 = processKey(s2, ';')  // col 4 (second 'b')
+    expect(s3.cursor.col).toBe(4)
+  })
+
+  it('does nothing when no last find', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, ';')
+    expect(s2.cursor.col).toBe(0)
+  })
+})
+
+describe(', — repeat last find in opposite direction', () => {
+  it('reverses last f find direction', () => {
+    const s = createInitialState(['abcabc'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'b') // col 1
+    const s3 = processKey(s2, ';') // col 4
+    const s4 = processKey(s3, ',') // back to col 1
+    expect(s4.cursor.col).toBe(1)
+  })
+})

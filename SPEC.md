@@ -306,7 +306,7 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-011 — Find Motions (f F t T ; ,)
-**Status:** `TODO`
+**Status:** `REVIEW`
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-011-find-motions`
 

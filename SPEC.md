@@ -635,7 +635,8 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ---
 
 ### SPEC-022 — Zone 1 Curriculum Data
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-022-zone1-curriculum`
 

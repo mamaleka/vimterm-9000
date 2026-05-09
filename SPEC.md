@@ -1319,7 +1319,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
 | SPEC-007 | HJKL Motions | REVIEW | 1 |
 | SPEC-008 | Word Motions | IN PROGRESS | 1 |
-| SPEC-009 | Line/File Motions | TODO | 1 |
+| SPEC-009 | Line/File Motions | REVIEW | 1 |
 | SPEC-010 | Count Modifiers | TODO | 1 |
 | SPEC-011 | Find Motions | TODO | 1 |
 | SPEC-012 | Search Motions | TODO | 1 |

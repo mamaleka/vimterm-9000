@@ -25,6 +25,13 @@ function clampCol(col: number, line: string): number {
   return Math.min(col, line.length - 1)
 }
 
+function firstNonWhitespaceCol(line: string): number {
+  for (let i = 0; i < line.length; i++) {
+    if (!/\s/.test(line[i]!)) return i
+  }
+  return 0
+}
+
 function isWordChar(ch: string): boolean {
   return /\w/.test(ch)
 }
@@ -239,6 +246,27 @@ export function processKey(state: VimState, key: string): VimState {
     }
     case 'e': {
       return { ...state, cursor: moveWordEnd(buffer, cursor) }
+    }
+    case '0': {
+      return { ...state, cursor: { row: cursor.row, col: 0 } }
+    }
+    case '^': {
+      const line = buffer[cursor.row] ?? ''
+      return { ...state, cursor: { row: cursor.row, col: firstNonWhitespaceCol(line) } }
+    }
+    case '$': {
+      const line = buffer[cursor.row] ?? ''
+      const col = Math.max(0, line.length - 1)
+      return { ...state, cursor: { row: cursor.row, col } }
+    }
+    case 'G': {
+      return { ...state, cursor: { row: lastRow, col: 0 } }
+    }
+    case 'g': {
+      if (state.pendingMotion.includes('g')) {
+        return { ...state, cursor: { row: 0, col: 0 }, pendingMotion: [] }
+      }
+      return { ...state, pendingMotion: ['g'] }
     }
     default:
       return state

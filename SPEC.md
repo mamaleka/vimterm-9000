@@ -333,7 +333,7 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-012 — Search Motions (/ ? n N)
-**Status:** `TODO`
+**Status:** `REVIEW`
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-012-search-motions`
 

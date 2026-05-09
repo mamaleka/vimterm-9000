@@ -357,7 +357,8 @@ search resolves the pattern.
 ---
 
 ### SPEC-013 — Motion Parser
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-013-motion-parser`
 

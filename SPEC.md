@@ -120,7 +120,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-005 — Static HomeScreen
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-003, SPEC-004
 **Branch:** `feat/SPEC-005-home-screen`
 
@@ -1312,7 +1314,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-002 | Tailwind CRT Theme | REVIEW | 0 |
 | SPEC-003 | TerminalWindow + Scanlines | REVIEW | 0 |
 | SPEC-004 | Zustand Store Skeleton | REVIEW | 0 |
-| SPEC-005 | Static HomeScreen | TODO | 0 |
+| SPEC-005 | Static HomeScreen | REVIEW | 0 |
 | SPEC-006 | Core Vim Types | REVIEW | 1 |
 | SPEC-007 | HJKL Motions | REVIEW | 1 |
 | SPEC-008 | Word Motions | TODO | 1 |

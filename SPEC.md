@@ -669,7 +669,9 @@ Zone 1 — Tutorial Bunker
 ---
 
 ### SPEC-023 — XP and Level Utilities
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-023-xp-utils`
 
@@ -1327,7 +1329,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-020 | HintPanel + KeyHistory | TODO | 2 |
 | SPEC-021 | Challenge Validator | TODO | 3 |
 | SPEC-022 | Zone 1 Curriculum Data | TODO | 3 |
-| SPEC-023 | XP + Level Utils | TODO | 3 |
+| SPEC-023 | XP + Level Utils | REVIEW | 3 |
 | SPEC-024 | Streak Utils | TODO | 3 |
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |

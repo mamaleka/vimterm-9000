@@ -19,7 +19,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ## Phase 0 — Project Bootstrap
 
 ### SPEC-001 — Vite + React + TypeScript Scaffold
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** nothing
 **Branch:** `feat/SPEC-001-vite-scaffold`
 
@@ -1292,7 +1294,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 
 | Spec | Title | Status | Phase |
 |------|-------|--------|-------|
-| SPEC-001 | Vite Scaffold | TODO | 0 |
+| SPEC-001 | Vite Scaffold | REVIEW | 0 |
 | SPEC-002 | Tailwind CRT Theme | TODO | 0 |
 | SPEC-003 | TerminalWindow + Scanlines | TODO | 0 |
 | SPEC-004 | Zustand Store Skeleton | TODO | 0 |

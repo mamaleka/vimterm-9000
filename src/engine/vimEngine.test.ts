@@ -332,3 +332,91 @@ describe('G — move to last row, col 0', () => {
     expect(s2.cursor.row).toBe(3)
   })
 })
+
+// --- SPEC-010 count modifier tests ---
+
+describe('count modifiers', () => {
+  it('3l moves right 3 columns', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(3)
+  })
+
+  it('3l stops at line end if line is shorter', () => {
+    const s = createInitialState(['hi'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(1) // 'hi' last col is 1
+  })
+
+  it('5j moves down 5 rows', () => {
+    const s = createInitialState(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+    const s1 = processKey(s, '5')
+    const s2 = processKey(s1, 'j')
+    expect(s2.cursor.row).toBe(5)
+  })
+
+  it('5j stops at last row if buffer has fewer rows', () => {
+    const s = createInitialState(['a', 'b', 'c'])
+    const s1 = processKey(s, '5')
+    const s2 = processKey(s1, 'j')
+    expect(s2.cursor.row).toBe(2)
+  })
+
+  it('2w moves forward 2 words', () => {
+    const s = createInitialState(['hello world foo'])
+    const s1 = processKey(s, '2')
+    const s2 = processKey(s1, 'w')
+    expect(s2.cursor.col).toBe(12) // 'f' of 'foo'
+  })
+
+  it('single digit 1l works same as l', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(1)
+  })
+
+  it('count resets after each motion', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l') // moves 3 right — count cleared
+    const s3 = processKey(s2, 'l') // moves 1 right (no count)
+    expect(s3.cursor.col).toBe(4)
+  })
+
+  it('multi-digit count: 12 accumulates correctly', () => {
+    const s = createInitialState(['hello world foo bar baz qux'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '2')
+    // pendingCount should be 12 now
+    const s3 = processKey(s2, 'l')
+    expect(s3.cursor.col).toBe(12)
+  })
+
+  it('0 when no pendingCount is the col-0 motion', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 3 } }, '0')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('0 after digit becomes part of count (10)', () => {
+    const s = createInitialState(['hello world foo bar'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '0')
+    // pendingCount is 10, not col-0 motion
+    expect(s2.cursor.col).toBe(0) // cursor hasn't moved yet
+    expect(s2.pendingCount).toBe(10)
+  })
+
+  it('10G moves to row 10 (or last row if fewer)', () => {
+    const lines = Array.from({ length: 15 }, (_, i) => `line ${i}`)
+    const s = createInitialState(lines)
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '0')
+    const s3 = processKey(s2, 'G')
+    // G with count N moves to row N-1 (1-indexed in Vim)
+    expect(s3.cursor.row).toBe(9) // 10th row = index 9
+  })
+})

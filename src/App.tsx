@@ -1,7 +1,5 @@
+import { HomeScreen } from './screens/HomeScreen'
+
 export default function App() {
-  return (
-    <div>
-      <h1>VIMTERM-9000</h1>
-    </div>
-  )
+  return <HomeScreen />
 }

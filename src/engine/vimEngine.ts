@@ -17,12 +17,21 @@ export function createInitialState(buffer: string[]): VimState {
     lastFindTill: false,
     searchPattern: null,
     lastAction: null,
+    visitedPositions: [],
+    motionCounts: {},
   }
 }
 
 function clampCol(col: number, line: string): number {
   if (line.length === 0) return 0
   return Math.min(col, line.length - 1)
+}
+
+function firstNonWhitespaceCol(line: string): number {
+  for (let i = 0; i < line.length; i++) {
+    if (!/\s/.test(line[i]!)) return i
+  }
+  return 0
 }
 
 function isWordChar(ch: string): boolean {
@@ -208,9 +217,57 @@ function moveWordEnd(
   return { row, col }
 }
 
-export function processKey(state: VimState, key: string): VimState {
+function findCharForward(line: string, fromCol: number, ch: string, till: boolean): number | null {
+  for (let i = fromCol + 1; i < line.length; i++) {
+    if (line[i] === ch) return till ? i - 1 : i
+  }
+  return null
+}
+
+function findCharBackward(line: string, fromCol: number, ch: string, till: boolean): number | null {
+  for (let i = fromCol - 1; i >= 0; i--) {
+    if (line[i] === ch) return till ? i + 1 : i
+  }
+  return null
+}
+
+function executeFindMotion(
+  state: VimState,
+  char: string,
+  direction: 'forward' | 'backward',
+  till: boolean,
+): VimState {
+  const line = state.buffer[state.cursor.row] ?? ''
+  const newCol =
+    direction === 'forward'
+      ? findCharForward(line, state.cursor.col, char, till)
+      : findCharBackward(line, state.cursor.col, char, till)
+  if (newCol === null) {
+    return { ...state, lastFindChar: char, lastFindDirection: direction, lastFindTill: till, pendingMotion: [] }
+  }
+  return {
+    ...state,
+    cursor: { ...state.cursor, col: newCol },
+    lastFindChar: char,
+    lastFindDirection: direction,
+    lastFindTill: till,
+    pendingMotion: [],
+  }
+}
+
+function processKeyOnce(state: VimState, key: string): VimState {
   const { cursor, buffer } = state
   const lastRow = buffer.length - 1
+
+  // Handle pending two-key find motions
+  if (state.pendingMotion.length > 0) {
+    const pending = state.pendingMotion[0]!
+    if (pending === 'f' || pending === 'F' || pending === 't' || pending === 'T') {
+      const direction: 'forward' | 'backward' = (pending === 'f' || pending === 't') ? 'forward' : 'backward'
+      const till = pending === 't' || pending === 'T'
+      return executeFindMotion(state, key, direction, till)
+    }
+  }
 
   switch (key) {
     case 'h': {
@@ -240,7 +297,70 @@ export function processKey(state: VimState, key: string): VimState {
     case 'e': {
       return { ...state, cursor: moveWordEnd(buffer, cursor) }
     }
+    case '0': {
+      return { ...state, cursor: { row: cursor.row, col: 0 } }
+    }
+    case '^': {
+      const line = buffer[cursor.row] ?? ''
+      return { ...state, cursor: { row: cursor.row, col: firstNonWhitespaceCol(line) } }
+    }
+    case '$': {
+      const line = buffer[cursor.row] ?? ''
+      const col = Math.max(0, line.length - 1)
+      return { ...state, cursor: { row: cursor.row, col } }
+    }
+    case 'G': {
+      return { ...state, cursor: { row: lastRow, col: 0 } }
+    }
+    case 'g': {
+      if (state.pendingMotion.includes('g')) {
+        return { ...state, cursor: { row: 0, col: 0 }, pendingMotion: [] }
+      }
+      return { ...state, pendingMotion: ['g'] }
+    }
+    case 'f':
+    case 'F':
+    case 't':
+    case 'T': {
+      return { ...state, pendingMotion: [key] }
+    }
+    case ';': {
+      if (!state.lastFindChar || !state.lastFindDirection) return state
+      return executeFindMotion(state, state.lastFindChar, state.lastFindDirection, state.lastFindTill)
+    }
+    case ',': {
+      if (!state.lastFindChar || !state.lastFindDirection) return state
+      const reversed: 'forward' | 'backward' = state.lastFindDirection === 'forward' ? 'backward' : 'forward'
+      return executeFindMotion(state, state.lastFindChar, reversed, state.lastFindTill)
+    }
     default:
       return state
   }
+}
+
+export function processKey(state: VimState, key: string): VimState {
+  // Accumulate digits into pendingCount.
+  // '0' only joins the count when a count is already in progress;
+  // otherwise it falls through to the col-0 motion in processKeyOnce.
+  if (/^[1-9]$/.test(key) || (key === '0' && state.pendingCount !== null)) {
+    const digit = parseInt(key, 10)
+    const newCount = state.pendingCount === null ? digit : state.pendingCount * 10 + digit
+    return { ...state, pendingCount: newCount }
+  }
+
+  const count = state.pendingCount ?? 1
+  const stateWithReset = { ...state, pendingCount: null }
+
+  // G with an explicit count jumps to a specific 1-indexed line.
+  if (key === 'G' && state.pendingCount !== null) {
+    const targetRow = Math.min(count - 1, state.buffer.length - 1)
+    return { ...stateWithReset, cursor: { row: targetRow, col: 0 } }
+  }
+
+  // For all other motions: apply the motion `count` times.
+  let result: VimState = stateWithReset
+  for (let i = 0; i < count; i++) {
+    result = processKeyOnce(result, key)
+  }
+  return result
 }

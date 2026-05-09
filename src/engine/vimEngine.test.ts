@@ -236,6 +236,294 @@ describe('e — move to end of current/next word', () => {
   })
 })
 
+// --- SPEC-009 line/file motion tests ---
+
+describe('0 — move to column 0', () => {
+  it('moves to col 0 from any position', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 7 } }, '0')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('stays at col 0 when already there', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, '0')
+    expect(s2.cursor.col).toBe(0)
+  })
+})
+
+describe('^ — move to first non-whitespace character', () => {
+  it('moves to first non-whitespace on indented line', () => {
+    const s = createInitialState(['   hello'])
+    const s2 = processKey(s, '^')
+    expect(s2.cursor.col).toBe(3)
+  })
+
+  it('moves to col 0 on line with no leading spaces', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, '^')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('moves to col 0 on empty line', () => {
+    const s = createInitialState([''])
+    const s2 = processKey(s, '^')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('handles tab indentation (tab is whitespace)', () => {
+    const s = createInitialState(['\t\thello'])
+    const s2 = processKey(s, '^')
+    expect(s2.cursor.col).toBe(2)
+  })
+})
+
+describe('$ — move to last character on line', () => {
+  it('moves to last char of line', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, '$')
+    expect(s2.cursor.col).toBe(4)
+  })
+
+  it('stays at col 0 on empty line', () => {
+    const s = createInitialState([''])
+    const s2 = processKey(s, '$')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('moves to last char from beginning of line', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey(s, '$')
+    expect(s2.cursor.col).toBe(10)
+  })
+})
+
+describe('gg — move to row 0, col 0', () => {
+  it('moves to beginning of buffer from any position', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    const s2 = processKey({ ...s, cursor: { row: 2, col: 3 } }, 'g')
+    const s3 = processKey(s2, 'g')
+    expect(s3.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('pressing g alone does not move cursor', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s2 = processKey({ ...s, cursor: { row: 1, col: 2 } }, 'g')
+    expect(s2.cursor).toEqual({ row: 1, col: 2 })
+  })
+})
+
+describe('G — move to last row, col 0', () => {
+  it('moves to last row from any position', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    const s2 = processKey(s, 'G')
+    expect(s2.cursor).toEqual({ row: 2, col: 0 })
+  })
+
+  it('stays at row 0 on single-line buffer', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, 'G')
+    expect(s2.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('G on multi-line moves to last row', () => {
+    const s = createInitialState(['a', 'b', 'c', 'd'])
+    const s2 = processKey(s, 'G')
+    expect(s2.cursor.row).toBe(3)
+  })
+})
+
+// --- SPEC-010 count modifier tests ---
+
+describe('count modifiers', () => {
+  it('3l moves right 3 columns', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(3)
+  })
+
+  it('3l stops at line end if line is shorter', () => {
+    const s = createInitialState(['hi'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(1) // 'hi' last col is 1
+  })
+
+  it('5j moves down 5 rows', () => {
+    const s = createInitialState(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+    const s1 = processKey(s, '5')
+    const s2 = processKey(s1, 'j')
+    expect(s2.cursor.row).toBe(5)
+  })
+
+  it('5j stops at last row if buffer has fewer rows', () => {
+    const s = createInitialState(['a', 'b', 'c'])
+    const s1 = processKey(s, '5')
+    const s2 = processKey(s1, 'j')
+    expect(s2.cursor.row).toBe(2)
+  })
+
+  it('2w moves forward 2 words', () => {
+    const s = createInitialState(['hello world foo'])
+    const s1 = processKey(s, '2')
+    const s2 = processKey(s1, 'w')
+    expect(s2.cursor.col).toBe(12) // 'f' of 'foo'
+  })
+
+  it('single digit 1l works same as l', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(1)
+  })
+
+  it('count resets after each motion', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l') // moves 3 right — count cleared
+    const s3 = processKey(s2, 'l') // moves 1 right (no count)
+    expect(s3.cursor.col).toBe(4)
+  })
+
+  it('multi-digit count: 12 accumulates correctly', () => {
+    const s = createInitialState(['hello world foo bar baz qux'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '2')
+    // pendingCount should be 12 now
+    const s3 = processKey(s2, 'l')
+    expect(s3.cursor.col).toBe(12)
+  })
+
+  it('0 when no pendingCount is the col-0 motion', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 3 } }, '0')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('0 after digit becomes part of count (10)', () => {
+    const s = createInitialState(['hello world foo bar'])
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '0')
+    // pendingCount is 10, not col-0 motion
+    expect(s2.cursor.col).toBe(0) // cursor hasn't moved yet
+    expect(s2.pendingCount).toBe(10)
+  })
+
+  it('10G moves to row 10 (or last row if fewer)', () => {
+    const lines = Array.from({ length: 15 }, (_, i) => `line ${i}`)
+    const s = createInitialState(lines)
+    const s1 = processKey(s, '1')
+    const s2 = processKey(s1, '0')
+    const s3 = processKey(s2, 'G')
+    // G with count N moves to row N-1 (1-indexed in Vim)
+    expect(s3.cursor.row).toBe(9) // 10th row = index 9
+  })
+})
+
+// --- SPEC-011 find motion tests ---
+
+describe('f — find char forward on line', () => {
+  it('moves to next occurrence of char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(4) // 'o' in 'hello'
+  })
+
+  it('no match — cursor does not move', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'z')
+    expect(s2.cursor.col).toBe(0)
+  })
+
+  it('stores lastFindChar and direction in state', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'o')
+    expect(s2.lastFindChar).toBe('o')
+    expect(s2.lastFindDirection).toBe('forward')
+    expect(s2.lastFindTill).toBe(false)
+  })
+
+  it('finds second occurrence with count 2 via ; repeat', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'l')  // lands on col 2
+    const s3 = processKey(s2, ';')  // repeats — lands on col 3
+    expect(s3.cursor.col).toBe(3)
+  })
+})
+
+describe('F — find char backward on line', () => {
+  it('moves to previous occurrence of char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 10 } }, 'F')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(7) // 'o' in 'world'
+  })
+
+  it('stores backward direction', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'F')
+    const s2 = processKey(s1, 'e')
+    expect(s2.lastFindDirection).toBe('backward')
+  })
+})
+
+describe('t — find char forward, land one before', () => {
+  it('lands one before the found char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 't')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(3) // one before 'o' at col 4
+  })
+
+  it('stores lastFindTill as true', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 't')
+    const s2 = processKey(s1, 'o')
+    expect(s2.lastFindTill).toBe(true)
+  })
+})
+
+describe('T — find char backward, land one after', () => {
+  it('lands one after the found char', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 10 } }, 'T')
+    const s2 = processKey(s1, 'o')
+    expect(s2.cursor.col).toBe(8) // one after 'o' at col 7
+  })
+})
+
+describe('; — repeat last find', () => {
+  it('repeats last f find in same direction', () => {
+    const s = createInitialState(['abcabc'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'b')  // col 1
+    const s3 = processKey(s2, ';')  // col 4 (second 'b')
+    expect(s3.cursor.col).toBe(4)
+  })
+
+  it('does nothing when no last find', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, ';')
+    expect(s2.cursor.col).toBe(0)
+  })
+})
+
+describe(', — repeat last find in opposite direction', () => {
+  it('reverses last f find direction', () => {
+    const s = createInitialState(['abcabc'])
+    const s1 = processKey(s, 'f')
+    const s2 = processKey(s1, 'b') // col 1
+    const s3 = processKey(s2, ';') // col 4
+    const s4 = processKey(s3, ',') // back to col 1
+    expect(s4.cursor.col).toBe(1)
+  })
+})
+
 // --- SPEC-012 search motion tests ---
 
 describe('/ — forward search', () => {
@@ -314,14 +602,14 @@ describe('? — backward search', () => {
 describe('n — repeat search forward', () => {
   it('moves to next match after n', () => {
     const s = createInitialState(['foo bar foo'])
-    // First search for 'foo'
-    const s1 = processKey(s, '/')
+    const positioned = { ...s, cursor: { row: 0, col: 4 } }
+    const s1 = processKey(positioned, '/')
     const s2 = processKey(s1, 'f')
     const s3 = processKey(s2, 'o')
     const s4 = processKey(s3, 'o')
-    const s5 = processKey(s4, 'Enter') // at col 0
-    const s6 = processKey(s5, 'n') // should jump to second 'foo' at col 8
-    expect(s6.cursor.col).toBe(8)
+    const s5 = processKey(s4, 'Enter') // lands at col 8 (second 'foo')
+    const s6 = processKey(s5, 'n') // wraps to first 'foo' at col 0
+    expect(s6.cursor.col).toBe(0)
   })
 
   it('does nothing when searchPattern is null', () => {

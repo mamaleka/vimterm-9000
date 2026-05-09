@@ -359,7 +359,9 @@ search resolves the pattern.
 ---
 
 ### SPEC-013 — Motion Parser
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-013-motion-parser`
 
@@ -1313,7 +1315,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-010 | Count Modifiers | TODO | 1 |
 | SPEC-011 | Find Motions | TODO | 1 |
 | SPEC-012 | Search Motions | TODO | 1 |
-| SPEC-013 | Motion Parser | TODO | 1 |
+| SPEC-013 | Motion Parser | REVIEW | 1 |
 | SPEC-014 | useKeyCapture Hook | TODO | 1 |
 | SPEC-015 | useVimEngine Hook | TODO | 1 |
 | SPEC-016 | EditorBuffer Component | TODO | 2 |

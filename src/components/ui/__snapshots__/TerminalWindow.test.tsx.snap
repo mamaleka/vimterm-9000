@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TerminalWindow > matches snapshot 1`] = `
+<div
+  class="relative min-h-screen bg-crt-bg border border-crt-border
+        text-crt-text font-terminal"
+>
+  <span>
+    snap
+  </span>
+</div>
+`;

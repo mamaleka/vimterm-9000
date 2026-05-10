@@ -460,7 +460,7 @@ function executeOperator(
   const endRow = endPos.row
   const endCol = endPos.col
 
-  // Helper to produce result state
+  // Shared result builder: operator result on same row with charwise register.
   const mkResult = (
     newBuffer: string[],
     newCursorCol: number,
@@ -483,54 +483,31 @@ function executeOperator(
     let yankText = ''
     if (startRow === endRow) {
       const line = buffer[startRow] ?? ''
-      const fromCol = Math.min(startCol, endCol)
-      const toCol = Math.max(startCol, endCol)
-      yankText = line.slice(fromCol, toCol)
+      yankText = line.slice(Math.min(startCol, endCol), Math.max(startCol, endCol))
     }
-    return {
-      ...state,
-      register: yankText,
-      registerType: 'char',
-      pendingOperator: null,
-      pendingCount: null,
-      lastAction: { type: 'operator', operator, motion, count },
-    }
+    return mkResult(buffer, startCol, yankText)
   }
 
   // 'd' and 'c' operators: modify buffer
 
   if (motion === '$') {
-    // Inclusive: delete from startCol to end of line
+    // '$' is inclusive to end of line; cursor for 'd' moves one left after deletion.
     const line = buffer[startRow] ?? ''
     const deletedText = line.slice(startCol)
-    const newLine = line.slice(0, startCol)
     const newBuffer = [...buffer]
-    newBuffer[startRow] = newLine
-    // For 'c': cursor stays at startCol; for 'd': cursor moves to startCol-1
+    newBuffer[startRow] = line.slice(0, startCol)
     const finalCol = operator === 'c' ? startCol : Math.max(0, startCol - 1)
-    return {
-      ...state,
-      buffer: newBuffer,
-      cursor: { row: startRow, col: finalCol },
-      register: deletedText,
-      registerType: 'char',
-      mode: operator === 'c' ? 'insert' : 'normal',
-      pendingOperator: null,
-      pendingCount: null,
-      insertedText: operator === 'c' ? '' : state.insertedText,
-      lastAction: { type: 'operator', operator, motion, count },
-    }
+    return mkResult(newBuffer, finalCol, deletedText)
   }
 
-  // All other motions: delete [startCol, endCol) on same row, or multi-row
+  // All other motions: exclusive [startCol, endCol) on same row, or multi-row
   if (startRow === endRow) {
     const line = buffer[startRow] ?? ''
     const fromCol = Math.min(startCol, endCol)
     const toCol = Math.max(startCol, endCol)
     const deletedText = line.slice(fromCol, toCol)
-    const newLine = line.slice(0, fromCol) + line.slice(toCol)
     const newBuffer = [...buffer]
-    newBuffer[startRow] = newLine
+    newBuffer[startRow] = line.slice(0, fromCol) + line.slice(toCol)
     return mkResult(newBuffer, fromCol, deletedText)
   }
 
@@ -538,9 +515,8 @@ function executeOperator(
   const startLine = buffer[startRow] ?? ''
   const endLine = buffer[endRow] ?? ''
   const deletedText = startLine.slice(startCol) + '\n' + endLine.slice(0, endCol)
-  const joined = startLine.slice(0, startCol) + endLine.slice(endCol)
   const newBuffer = [...buffer]
-  newBuffer.splice(startRow, endRow - startRow + 1, joined)
+  newBuffer.splice(startRow, endRow - startRow + 1, startLine.slice(0, startCol) + endLine.slice(endCol))
   return mkResult(newBuffer, startCol, deletedText)
 }
 

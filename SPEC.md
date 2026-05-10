@@ -521,7 +521,9 @@ Uses absolute positioning over the EditorBuffer grid.
 ---
 
 ### SPEC-018 — LineNumbers and StatusBar Components
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-006, SPEC-002
 **Branch:** `feat/SPEC-018-line-numbers-status-bar`
 
@@ -1338,7 +1340,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-015 | useVimEngine Hook | REVIEW | 1 |
 | SPEC-016 | EditorBuffer Component | REVIEW | 2 |
 | SPEC-017 | CursorOverlay Component | TODO | 2 |
-| SPEC-018 | LineNumbers + StatusBar | TODO | 2 |
+| SPEC-018 | LineNumbers + StatusBar | REVIEW | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
 | SPEC-020 | HintPanel + KeyHistory | TODO | 2 |
 | SPEC-021 | Challenge Validator | REVIEW | 3 |

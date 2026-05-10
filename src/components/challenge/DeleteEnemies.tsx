@@ -12,20 +12,24 @@ interface Props {
 
 const ENEMY_TOKENS = ['[X]', '>><<', '"VIRUS"', '{BOSS}']
 
-function countEnemies(buffer: string[]): number {
+function countTokenOccurrences(line: string, token: string): number {
   let count = 0
-  for (const line of buffer) {
-    for (const token of ENEMY_TOKENS) {
-      let start = 0
-      while (true) {
-        const idx = line.indexOf(token, start)
-        if (idx === -1) break
-        count++
-        start = idx + token.length
-      }
-    }
+  let start = 0
+  while (start < line.length) {
+    const idx = line.indexOf(token, start)
+    if (idx === -1) break
+    count++
+    start = idx + token.length
   }
   return count
+}
+
+function countEnemies(buffer: string[]): number {
+  return buffer.reduce(
+    (total, line) =>
+      total + ENEMY_TOKENS.reduce((sum, token) => sum + countTokenOccurrences(line, token), 0),
+    0
+  )
 }
 
 export function DeleteEnemies({ challenge, onSuccess, onArrowKeyPress }: Props) {

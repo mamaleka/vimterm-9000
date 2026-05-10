@@ -1,6 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react'
-import type { VimState } from '../../types/vim'
-import type { Position } from '../../types/vim'
+import type { VimState, Position } from '../../types/vim'
 import type { ChallengeDefinition } from '../../types/challenge'
 import { validateChallenge } from '../../engine/challengeValidator'
 import { VimEditor } from '../editor/VimEditor'

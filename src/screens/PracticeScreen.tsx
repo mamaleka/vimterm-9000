@@ -48,7 +48,7 @@ export function PracticeScreen() {
   const recordArrowKeyPress = useStore((s) => s.recordArrowKeyPress)
 
   const [arrowWarning, setArrowWarning] = useState(false)
-  const [keyHistory, setKeyHistory] = useState<string[]>([])
+  const [keyHistory] = useState<string[]>([])
 
   const challenge = currentChallengeId ? findChallenge(currentChallengeId) : undefined
 
@@ -84,10 +84,6 @@ export function PracticeScreen() {
       setArrowWarning(false)
     }, 1500)
   }, [recordArrowKeyPress])
-
-  const handleKey = useCallback((key: string) => {
-    setKeyHistory((prev) => [...prev, key])
-  }, [])
 
   if (!challenge) {
     return (

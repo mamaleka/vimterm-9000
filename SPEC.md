@@ -455,7 +455,9 @@ wires `useKeyCapture` to `processKey`, exposes state and a `reset(buffer)` funct
 ## Phase 2 — Editor Component
 
 ### SPEC-016 — EditorBuffer Component
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-09
+**Completed:** 2026-05-09
 **Depends on:** SPEC-015
 **Branch:** `feat/SPEC-016-editor-buffer`
 
@@ -1334,7 +1336,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-013 | Motion Parser | REVIEW | 1 |
 | SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
 | SPEC-015 | useVimEngine Hook | REVIEW | 1 |
-| SPEC-016 | EditorBuffer Component | TODO | 2 |
+| SPEC-016 | EditorBuffer Component | REVIEW | 2 |
 | SPEC-017 | CursorOverlay Component | TODO | 2 |
 | SPEC-018 | LineNumbers + StatusBar | TODO | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |

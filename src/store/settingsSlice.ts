@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand'
 
 export interface ThemeSettings {
-  phosphorColor: 'green' | 'amber' | 'white'
+  phosphorColor: 'green' | 'amber' | 'blue' | 'white'
   scanlines: boolean
   crtCurvature: boolean
   flickerEffect: boolean

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, act } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { useStore } from '../store'
 import SettingsScreen from './SettingsScreen'
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useStore } from '../store'
 import { ProfileScreen } from './ProfileScreen'
@@ -97,5 +97,18 @@ describe('ProfileScreen', () => {
     render(<ProfileScreen />)
     const lockedEntries = screen.getAllByText('???')
     expect(lockedEntries.length).toBeGreaterThan(0)
+  })
+
+  it('renders BACK button', () => {
+    render(<ProfileScreen />)
+    expect(screen.getByTestId('back-button')).toBeInTheDocument()
+  })
+
+  it('clicking BACK button calls navigateTo("home")', () => {
+    const navigateTo = vi.fn()
+    useStore.setState({ navigateTo })
+    render(<ProfileScreen />)
+    fireEvent.click(screen.getByTestId('back-button'))
+    expect(navigateTo).toHaveBeenCalledWith('home')
   })
 })

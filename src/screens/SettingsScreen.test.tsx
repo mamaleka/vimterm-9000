@@ -191,6 +191,23 @@ describe('Accessibility section', () => {
   })
 })
 
+// ─── Navigation ───────────────────────────────────────────────────────────────
+
+describe('Navigation', () => {
+  it('renders BACK button', () => {
+    renderSettings()
+    expect(screen.getByTestId('back-button')).toBeInTheDocument()
+  })
+
+  it('clicking BACK button calls navigateTo("home")', () => {
+    const navigateTo = vi.fn()
+    useStore.setState({ navigateTo })
+    renderSettings()
+    fireEvent.click(screen.getByTestId('back-button'))
+    expect(navigateTo).toHaveBeenCalledWith('home')
+  })
+})
+
 // ─── Export / Save ────────────────────────────────────────────────────────────
 
 describe('Export section', () => {

@@ -38,6 +38,7 @@ function getLast30Days(): string[] {
 }
 
 export function ProfileScreen() {
+  const navigateTo = useStore((s) => s.navigateTo)
   const displayName = useStore((s) => s.displayName)
   const level = useStore((s) => s.level)
   const title = useStore((s) => s.title)
@@ -50,6 +51,16 @@ export function ProfileScreen() {
   return (
     <TerminalWindow>
       <div className="flex flex-col gap-6 p-6 text-crt-text font-terminal">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-crt-bright font-terminal text-2xl tracking-widest">PROFILE</h1>
+          <button
+            data-testid="back-button"
+            onClick={() => navigateTo('home')}
+            className="text-crt-text font-mono border border-crt-border px-3 py-1 hover:text-crt-bright"
+          >
+            ← BACK
+          </button>
+        </div>
         <div className="border border-crt-border p-4" data-testid="player-card">
           <div className="text-crt-bright text-3xl" data-testid="player-name">
             {displayName}

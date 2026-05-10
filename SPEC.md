@@ -869,7 +869,9 @@ XP bar animates from old value to new value over 600ms. "Continue" button advanc
 ## Phase 4 — World Map and Navigation
 
 ### SPEC-028 — Custom Router
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-004
 **Branch:** `feat/SPEC-028-custom-router`
 
@@ -1352,7 +1354,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
 | SPEC-027 | ChallengeCompleteScreen | TODO | 3 |
-| SPEC-028 | Custom Router | TODO | 4 |
+| SPEC-028 | Custom Router | REVIEW | 4 |
 | SPEC-029 | WorldMapScreen | TODO | 4 |
 | SPEC-030 | HUD + XPBar | TODO | 4 |
 | SPEC-031 | Operator Motions | TODO | 5 |

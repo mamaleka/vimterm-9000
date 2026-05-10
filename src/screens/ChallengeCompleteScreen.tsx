@@ -67,14 +67,12 @@ export default function ChallengeCompleteScreen({
           </div>
 
           <div>
-            <div className="flex justify-between text-crt-dim font-mono text-xs mb-1">
-              <span>XP BAR</span>
-            </div>
+            <div className="text-crt-dim font-mono text-xs mb-1">XP BAR</div>
             <div className="border border-crt-border h-4 w-full overflow-hidden">
               <div
                 data-testid="xp-bar-fill"
                 className="h-full bg-crt-text transition-[width] duration-[600ms] ease-out"
-                style={{ width: `${Math.min(100, (xpEarned / 500) * 100)}%` }}
+                style={{ width: `${Math.min(100, xpEarned / 5)}%` }}
               />
             </div>
           </div>

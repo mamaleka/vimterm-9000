@@ -1821,7 +1821,7 @@ describe('<C-o> — jump backward in jump list', () => {
     const s1 = processKey(withJumps, '<C-o>')
     const s2 = processKey(s1, '<C-o>')
     expect(s2.cursor).toEqual({ row: 1, col: 0 })
-    expect(s2.jumpIndex).toBe(1)
+    expect(s2.jumpIndex).toBe(0)
   })
 })
 

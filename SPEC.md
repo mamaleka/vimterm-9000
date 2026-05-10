@@ -1255,7 +1255,7 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ---
 
 ### SPEC-039 — ProfileScreen
-**Status:** `TODO`
+**Status:** `DONE`
 **Depends on:** SPEC-028, SPEC-037, SPEC-004
 **Branch:** `feat/SPEC-039-profile-screen`
 
@@ -1403,6 +1403,188 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 
 ---
 
+## Phase 9 — Navigation & UX Fixes (Browser Test Report)
+
+Specs in this phase address navigation dead-ends and UX issues found during
+browser testing. See `BROWSER_TEST_REPORT.md` for full details.
+
+---
+
+### SPEC-044 — HomeScreen Navigation
+**Status:** `DONE`
+**Started:** 2026-05-11
+**Completed:** 2026-05-11
+**Depends on:** SPEC-005, SPEC-028
+**Branch:** `feat/SPEC-044-homescreen-nav`
+
+**Files to modify:**
+- `src/screens/HomeScreen.tsx`
+- `src/screens/HomeScreen.test.tsx`
+
+**What it does:** Adds navigation buttons to the HomeScreen so users can reach
+World Map, Skill Tree, Settings, and Profile from the main hub.
+
+**Tests:**
+- "WORLD MAP" button renders and calls `navigateTo('worldMap')` on click
+- "SKILL TREE" button renders and calls `navigateTo('skillTree')` on click
+- "SETTINGS" button renders and calls `navigateTo('settings')` on click
+- "PROFILE" button renders and calls `navigateTo('profile')` on click
+- Buttons have CRT-themed styling (Tailwind classes)
+
+**Acceptance criteria:**
+- All four navigation buttons visible on HomeScreen
+- Each button navigates to the correct screen
+- Buttons styled with CRT palette (border, hover glow)
+- Tests pass, zero TypeScript errors
+
+---
+
+### SPEC-045 — Screen Back Buttons
+**Status:** `DONE`
+**Depends on:** SPEC-028, SPEC-029, SPEC-042, SPEC-039
+**Branch:** `feat/SPEC-045-back-buttons`
+
+**Files to modify:**
+- `src/screens/WorldMapScreen.tsx`
+- `src/screens/WorldMapScreen.test.tsx`
+- `src/screens/SettingsScreen.tsx`
+- `src/screens/SettingsScreen.test.tsx`
+- `src/screens/ProfileScreen.tsx`
+- `src/screens/ProfileScreen.test.tsx`
+
+**What it does:** Adds a "← BACK" button to WorldMapScreen (navigates to `home`),
+SettingsScreen (navigates to `home`), and ProfileScreen (navigates to `home`).
+
+**Tests:**
+- WorldMapScreen: "BACK" button renders and navigates to `home`
+- SettingsScreen: "BACK" button renders and navigates to `home`
+- ProfileScreen: "BACK" button renders and navigates to `home`
+- Back buttons use consistent CRT styling (matches SkillTreeScreen pattern)
+
+**Acceptance criteria:**
+- Each of the three screens has a visible back button
+- Back buttons navigate to `home`
+- Styling matches existing "← BACK" button on SkillTreeScreen
+- Tests pass, zero TypeScript errors
+
+---
+
+### SPEC-046 — Zone-to-Lesson Flow
+**Status:** `DONE`
+**Started:** 2026-05-11
+**Depends on:** SPEC-029, SPEC-043, SPEC-022
+**Branch:** `feat/SPEC-046-zone-lesson-flow`
+
+**Files to modify:**
+- `src/screens/WorldMapScreen.tsx`
+- `src/screens/WorldMapScreen.test.tsx`
+- `src/screens/LessonScreen.tsx`
+- `src/screens/LessonScreen.test.tsx`
+- `src/store/challengeSlice.ts` (if needed to set active lesson on zone click)
+
+**What it does:** Fixes the dead-end when clicking a zone on the World Map.
+Clicking an unlocked zone should set the active lesson (first incomplete lesson
+in that zone) in the store before navigating to the lesson screen. The lesson
+screen should show lesson content instead of "No lesson selected" when a lesson
+is active.
+
+**Tests:**
+- Clicking an unlocked zone sets the active lesson in the store
+- LessonScreen renders lesson title and theory text when a lesson is active
+- LessonScreen shows a "← BACK TO WORLD MAP" button
+- If all lessons in a zone are complete, show a summary or redirect
+
+**Acceptance criteria:**
+- Clicking a zone loads the first incomplete lesson for that zone
+- LessonScreen never shows "No lesson selected" after a zone click
+- Back button returns to World Map
+- Tests pass, zero TypeScript errors
+
+---
+
+### SPEC-047 — Practice Screen Fallback
+**Status:** `DONE`
+**Depends on:** SPEC-026, SPEC-028
+**Branch:** `feat/SPEC-047-practice-fallback`
+
+**Files to modify:**
+- `src/screens/PracticeScreen.tsx`
+- `src/screens/PracticeScreen.test.tsx`
+
+**What it does:** When the practice screen is opened with no active challenge,
+instead of showing a dead-end "No challenge selected" message, it either
+redirects to the World Map or shows a challenge picker that lists available
+challenges.
+
+**Tests:**
+- When no challenge is active, renders a "No challenge active" message with a
+  "GO TO WORLD MAP" button
+- "GO TO WORLD MAP" button navigates to `worldMap`
+- When a challenge is active, renders the challenge as before
+
+**Acceptance criteria:**
+- No dead-end state — user can always navigate away
+- Fallback UI matches CRT theme
+- Tests pass, zero TypeScript errors
+
+---
+
+### SPEC-048 — Boss Fight Forfeit
+**Status:** `DONE`
+**Depends on:** SPEC-041
+**Branch:** `feat/SPEC-048-boss-forfeit`
+
+**Files to modify:**
+- `src/screens/BossFightScreen.tsx`
+- `src/screens/BossFightScreen.test.tsx`
+
+**What it does:** Adds a forfeit/exit button to the BossFightScreen so users
+are not trapped during a boss fight. Forfeiting navigates back to the World Map
+without awarding any rewards.
+
+**Tests:**
+- "FORFEIT" button renders during an active boss fight
+- Clicking "FORFEIT" navigates to `worldMap`
+- Forfeiting does not award XP or mark the boss as defeated
+- Forfeit button is not shown on victory/defeat result screens
+
+**Acceptance criteria:**
+- Forfeit button visible during active boss fight phase
+- Forfeit navigates to World Map without side effects
+- Does not interfere with victory/defeat flow
+- Tests pass, zero TypeScript errors
+
+---
+
+### SPEC-049 — Responsive ASCII Logo
+**Status:** `DONE`
+**Started:** 2026-05-11
+**Completed:** 2026-05-11
+**Note:** Implemented together with SPEC-044 in same branch
+**Depends on:** SPEC-005
+**Branch:** `feat/SPEC-044-homescreen-nav`
+
+**Files to modify:**
+- `src/screens/HomeScreen.tsx`
+- `src/screens/HomeScreen.test.tsx`
+
+**What it does:** Makes the ASCII art logo on the HomeScreen responsive for
+narrow viewports. On small screens (< 640px), the logo container should
+horizontally scroll or scale down to prevent layout overflow.
+
+**Tests:**
+- Logo container has `overflow-x-auto` class
+- Logo renders inside a scrollable container
+- No horizontal page overflow on narrow viewports (visual check)
+
+**Acceptance criteria:**
+- ASCII logo does not cause horizontal page scroll on 375px viewport
+- Logo container allows horizontal scrolling within itself
+- Desktop layout unchanged
+- Tests pass, zero TypeScript errors
+
+---
+
 ## Spec Status Summary
 
 | Spec | Title | Status | Phase |
@@ -1450,3 +1632,9 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-041 | BossFightScreen | DONE | 7 |
 | SPEC-042 | SettingsScreen | DONE | 8 |
 | SPEC-043 | LessonScreen | DONE | 8 |
+| SPEC-044 | HomeScreen Navigation | REVIEW | 9 |
+| SPEC-045 | Screen Back Buttons | TODO | 9 |
+| SPEC-046 | Zone-to-Lesson Flow | TODO | 9 |
+| SPEC-047 | Practice Screen Fallback | TODO | 9 |
+| SPEC-048 | Boss Fight Forfeit | TODO | 9 |
+| SPEC-049 | Responsive ASCII Logo | REVIEW | 9 |

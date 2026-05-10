@@ -200,10 +200,9 @@ describe('Navigation', () => {
   })
 
   it('clicking BACK button calls navigateTo("home")', () => {
-    renderSettings()
     const navigateTo = vi.fn()
     useStore.setState({ navigateTo })
-    render(<SettingsScreen />)
+    renderSettings()
     fireEvent.click(screen.getByTestId('back-button'))
     expect(navigateTo).toHaveBeenCalledWith('home')
   })

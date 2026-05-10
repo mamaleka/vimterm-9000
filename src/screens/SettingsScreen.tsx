@@ -71,6 +71,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 }
 
 export default function SettingsScreen() {
+  const navigateTo = useStore((s) => s.navigateTo)
   const theme = useStore((s) => s.theme)
   const audio = useStore((s) => s.audio)
   const gameplay = useStore((s) => s.gameplay)
@@ -129,9 +130,18 @@ export default function SettingsScreen() {
   return (
     <TerminalWindow>
       <div className="max-w-2xl mx-auto p-8">
-        <h1 className="text-crt-bright font-terminal text-3xl tracking-widest mb-6">
-          SETTINGS
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-crt-bright font-terminal text-3xl tracking-widest">
+            SETTINGS
+          </h1>
+          <button
+            data-testid="back-button"
+            onClick={() => navigateTo('home')}
+            className="text-crt-text font-mono border border-crt-border px-3 py-1 hover:text-crt-bright"
+          >
+            ← BACK
+          </button>
+        </div>
 
         <SectionHeader>THEME</SectionHeader>
         <div className="flex flex-col gap-2">

@@ -85,8 +85,17 @@ export function WorldMapScreen() {
   return (
     <TerminalWindow>
       <div className="flex flex-col items-center min-h-screen p-8 gap-2">
-        <div className="text-crt-bright font-terminal text-2xl tracking-widest mb-6">
-          {'>>> WORLD MAP <<<'}
+        <div className="flex items-center justify-between mb-6 w-full max-w-2xl">
+          <div className="text-crt-bright font-terminal text-2xl tracking-widest">
+            {'>>> WORLD MAP <<<'}
+          </div>
+          <button
+            data-testid="back-button"
+            onClick={() => navigateTo('home')}
+            className="text-crt-text font-mono border border-crt-border px-3 py-1 hover:text-crt-bright"
+          >
+            ← BACK
+          </button>
         </div>
 
         <div className="flex flex-col gap-4 w-full max-w-2xl">

@@ -105,7 +105,6 @@ describe('ProfileScreen', () => {
   })
 
   it('clicking BACK button calls navigateTo("home")', () => {
-    render(<ProfileScreen />)
     const navigateTo = vi.fn()
     useStore.setState({ navigateTo })
     render(<ProfileScreen />)

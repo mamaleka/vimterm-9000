@@ -907,8 +907,9 @@ type Screen = 'home' | 'worldMap' | 'skillTree' | 'lesson' | 'practice'
 ---
 
 ### SPEC-029 — WorldMapScreen
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-003, SPEC-004
 **Branch:** `feat/SPEC-029-world-map`
 

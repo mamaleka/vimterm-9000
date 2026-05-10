@@ -1164,7 +1164,8 @@ the next. All reached → `onSuccess`.
 ## Phase 6 — Gamification Layer
 
 ### SPEC-037 — Achievement Definitions and useAchievements Hook
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-10
 **Depends on:** SPEC-004, SPEC-023
 **Branch:** `feat/SPEC-037-achievements`
 
@@ -1401,7 +1402,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |
 | SPEC-035 | DeleteEnemies + Transform | TODO | 5 |
 | SPEC-036 | SpeedRun Challenge | TODO | 5 |
-| SPEC-037 | Achievements | TODO | 6 |
+| SPEC-037 | Achievements | IN PROGRESS | 6 |
 | SPEC-038 | SkillTreeScreen | TODO | 6 |
 | SPEC-039 | ProfileScreen | TODO | 6 |
 | SPEC-040 | Boss Data | TODO | 7 |

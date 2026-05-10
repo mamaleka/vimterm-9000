@@ -1,4 +1,5 @@
 import { HomeScreen } from './screens/HomeScreen'
+import { WorldMapScreen } from './screens/WorldMapScreen'
 import { useStore } from './store'
 import type { Screen } from './store/challengeSlice'
 
@@ -17,7 +18,7 @@ export default function App() {
     case 'home':
       return <HomeScreen />
     case 'worldMap':
-      return <ScreenPlaceholder name="worldMap" />
+      return <WorldMapScreen />
     case 'skillTree':
       return <ScreenPlaceholder name="skillTree" />
     case 'lesson':

@@ -11,12 +11,12 @@ export function HUD() {
       <div className="flex items-center justify-between">
         <span>
           LV <span className="text-crt-bright">{level}</span>
-          {' '}
+          {' — '}
           XP <span className="text-crt-bright">{xp}</span>
         </span>
         {streak.current > 0 && (
           <span data-testid="streak-badge" className="text-crt-amber">
-            {streak.current}🔥
+            STREAK:{streak.current}
           </span>
         )}
       </div>

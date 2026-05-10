@@ -4,23 +4,31 @@ import { WorldMapScreen } from './WorldMapScreen'
 
 // Mock the store so we can control unlockedZones and spy on navigateTo
 const mockNavigateTo = vi.fn()
+const mockSetCurrentLesson = vi.fn()
 const mockUnlockedZones = { current: ['zone1'] }
+const mockCompletedLessons: { current: Record<string, unknown> } = { current: {} }
 
 vi.mock('../store', () => ({
   useStore: (selector: (s: {
     unlockedZones: string[]
     navigateTo: (screen: string) => void
+    completedLessons: Record<string, unknown>
+    setCurrentLesson: (id: string) => void
   }) => unknown) =>
     selector({
       unlockedZones: mockUnlockedZones.current,
       navigateTo: mockNavigateTo,
+      completedLessons: mockCompletedLessons.current,
+      setCurrentLesson: mockSetCurrentLesson,
     }),
 }))
 
 describe('WorldMapScreen', () => {
   beforeEach(() => {
     mockNavigateTo.mockClear()
+    mockSetCurrentLesson.mockClear()
     mockUnlockedZones.current = ['zone1']
+    mockCompletedLessons.current = {}
   })
 
   it('renders all 5 zones', () => {
@@ -93,5 +101,42 @@ describe('WorldMapScreen', () => {
     const { container } = render(<WorldMapScreen />)
     const wrapper = container.querySelector('.bg-crt-bg')
     expect(wrapper).not.toBeNull()
+  })
+
+  it('clicking unlocked zone1 calls setCurrentLesson with first lesson', () => {
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('zone-1'))
+    expect(mockSetCurrentLesson).toHaveBeenCalledWith('zone1-lesson1')
+  })
+
+  it('clicking unlocked zone1 still calls navigateTo("lesson")', () => {
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('zone-1'))
+    expect(mockNavigateTo).toHaveBeenCalledWith('lesson')
+  })
+
+  it('clicking unlocked zone1 sets first incomplete lesson when first is complete', () => {
+    mockCompletedLessons.current = { 'zone1-lesson1': { stars: 3, bestTime: 10, completedAt: '2026-01-01' } }
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('zone-1'))
+    expect(mockSetCurrentLesson).toHaveBeenCalledWith('zone1-lesson2')
+  })
+
+  it('clicking unlocked zone1 falls back to first lesson when all lessons complete', () => {
+    mockCompletedLessons.current = {
+      'zone1-lesson1': { stars: 3, bestTime: 10, completedAt: '2026-01-01' },
+      'zone1-lesson2': { stars: 3, bestTime: 10, completedAt: '2026-01-01' },
+      'zone1-lesson3': { stars: 3, bestTime: 10, completedAt: '2026-01-01' },
+      'zone1-lesson4': { stars: 3, bestTime: 10, completedAt: '2026-01-01' },
+    }
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('zone-1'))
+    expect(mockSetCurrentLesson).toHaveBeenCalledWith('zone1-lesson1')
+  })
+
+  it('clicking a locked zone does not call setCurrentLesson', () => {
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('zone-2'))
+    expect(mockSetCurrentLesson).not.toHaveBeenCalled()
   })
 })

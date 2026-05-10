@@ -1224,7 +1224,10 @@ interface AchievementDefinition {
 ---
 
 ### SPEC-038 — SkillTreeScreen
-**Status:** `TODO`
+**Status:** `DONE`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-037, SPEC-003
 **Branch:** `feat/SPEC-038-skill-tree`
 
@@ -1435,7 +1438,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-035 | DeleteEnemies + Transform | DONE | 5 |
 | SPEC-036 | SpeedRun Challenge | DONE | 5 |
 | SPEC-037 | Achievements | DONE | 6 |
-| SPEC-038 | SkillTreeScreen | TODO | 6 |
+| SPEC-038 | SkillTreeScreen | DONE | 6 |
 | SPEC-039 | ProfileScreen | TODO | 6 |
 | SPEC-040 | Boss Data | DONE | 7 |
 | SPEC-041 | BossFightScreen | REVIEW | 7 |

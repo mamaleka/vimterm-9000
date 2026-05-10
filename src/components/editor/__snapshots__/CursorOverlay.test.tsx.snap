@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CursorOverlay > snapshot — renders cursor element in insert mode 1`] = `
+<span
+  class="absolute pointer-events-none w-0.5 h-[1em] bg-crt-cursor opacity-100"
+  data-mode="insert"
+  data-testid="cursor-overlay"
+  style="top: 0em; left: 0ch;"
+/>
+`;
+
+exports[`CursorOverlay > snapshot — renders cursor element in normal mode 1`] = `
+<span
+  class="absolute pointer-events-none w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference opacity-100"
+  data-mode="normal"
+  data-testid="cursor-overlay"
+  style="top: 3em; left: 7ch;"
+/>
+`;

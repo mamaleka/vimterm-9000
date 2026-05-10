@@ -495,9 +495,10 @@ Enemy marker cells get `data-enemy="true"`.
 ---
 
 ### SPEC-017 — CursorOverlay Component
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-016
 **Branch:** `feat/SPEC-017-cursor-overlay`
 
@@ -831,9 +832,10 @@ navigating to ChallengeCompleteScreen.
 ---
 
 ### SPEC-027 — ChallengeCompleteScreen
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-023, SPEC-004
 **Branch:** `feat/SPEC-027-challenge-complete-screen`
 
@@ -907,9 +909,10 @@ type Screen = 'home' | 'worldMap' | 'skillTree' | 'lesson' | 'practice'
 ---
 
 ### SPEC-029 — WorldMapScreen
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-003, SPEC-004
 **Branch:** `feat/SPEC-029-world-map`
 
@@ -935,9 +938,10 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-030 — HUD Component (XP Bar + Streak Badge)
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-023, SPEC-024, SPEC-004
 **Branch:** `feat/SPEC-030-hud`
 
@@ -968,9 +972,10 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ## Phase 5 — Full Curriculum (Operator and Text Object Engine)
 
 ### SPEC-031 — Operator Motions (d c y p .)
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-015
 **Branch:** `feat/SPEC-031-operator-motions`
 
@@ -1357,7 +1362,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
 | SPEC-015 | useVimEngine Hook | REVIEW | 1 |
 | SPEC-016 | EditorBuffer Component | DONE | 2 |
-| SPEC-017 | CursorOverlay Component | REVIEW | 2 |
+| SPEC-017 | CursorOverlay Component | DONE | 2 |
 | SPEC-018 | LineNumbers + StatusBar | DONE | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
 | SPEC-020 | HintPanel + KeyHistory | DONE | 2 |
@@ -1367,11 +1372,11 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-024 | Streak Utils | REVIEW | 3 |
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
-| SPEC-027 | ChallengeCompleteScreen | REVIEW | 3 |
+| SPEC-027 | ChallengeCompleteScreen | DONE | 3 |
 | SPEC-028 | Custom Router | DONE | 4 |
-| SPEC-029 | WorldMapScreen | TODO | 4 |
-| SPEC-030 | HUD + XPBar | REVIEW | 4 |
-| SPEC-031 | Operator Motions | REVIEW | 5 |
+| SPEC-029 | WorldMapScreen | DONE | 4 |
+| SPEC-030 | HUD + XPBar | DONE | 4 |
+| SPEC-031 | Operator Motions | DONE | 5 |
 | SPEC-032 | Text Object Motions | TODO | 5 |
 | SPEC-033 | Marks + Jump Motions | TODO | 5 |
 | SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |

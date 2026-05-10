@@ -168,4 +168,28 @@ describe('PracticeScreen', () => {
     render(<PracticeScreen />)
     expect(screen.getByText('Use l to move right')).toBeInTheDocument()
   })
+
+  describe('no challenge fallback', () => {
+    it('renders "No challenge active" message when no challenge is set', () => {
+      useStore.setState({ currentChallengeId: null })
+      render(<PracticeScreen />)
+      expect(screen.getByText('No challenge active')).toBeInTheDocument()
+    })
+
+    it('renders "GO TO WORLD MAP" button when no challenge is set', () => {
+      useStore.setState({ currentChallengeId: null })
+      render(<PracticeScreen />)
+      expect(screen.getByTestId('go-to-world-map')).toBeInTheDocument()
+    })
+
+    it('"GO TO WORLD MAP" button calls navigateTo with worldMap', () => {
+      useStore.setState({ currentChallengeId: null })
+      render(<PracticeScreen />)
+      const button = screen.getByTestId('go-to-world-map')
+      act(() => {
+        button.click()
+      })
+      expect(useStore.getState().currentScreen).toBe('worldMap')
+    })
+  })
 })

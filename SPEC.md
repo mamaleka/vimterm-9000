@@ -574,7 +574,8 @@ Uses absolute positioning over the EditorBuffer grid.
 ---
 
 ### SPEC-019 — VimEditor Compose Component
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-10
 **Depends on:** SPEC-016, SPEC-017, SPEC-018, SPEC-015
 **Branch:** `feat/SPEC-019-vim-editor`
 

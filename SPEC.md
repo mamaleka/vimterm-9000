@@ -1335,7 +1335,9 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ## Phase 8 — Polish
 
 ### SPEC-042 — SettingsScreen
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-004
 **Branch:** `feat/SPEC-042-settings-screen`
 
@@ -1427,5 +1429,5 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-039 | ProfileScreen | TODO | 6 |
 | SPEC-040 | Boss Data | DONE | 7 |
 | SPEC-041 | BossFightScreen | TODO | 7 |
-| SPEC-042 | SettingsScreen | TODO | 8 |
+| SPEC-042 | SettingsScreen | REVIEW | 8 |
 | SPEC-043 | LessonScreen | TODO | 8 |

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { SkillTreeScreen } from './SkillTreeScreen'
 
@@ -35,11 +35,11 @@ describe('SkillTreeScreen', () => {
 
   it('renders phase labels', () => {
     render(<SkillTreeScreen />)
-    expect(screen.getByText('Basic Movement')).toBeInTheDocument()
-    expect(screen.getByText('Find & Search')).toBeInTheDocument()
-    expect(screen.getByText('Operators')).toBeInTheDocument()
-    expect(screen.getByText('Text Objects')).toBeInTheDocument()
-    expect(screen.getByText('Marks & Jumps')).toBeInTheDocument()
+    expect(screen.getByText(/Basic Movement/)).toBeInTheDocument()
+    expect(screen.getByText(/Find & Search/)).toBeInTheDocument()
+    expect(screen.getByText(/Operators/)).toBeInTheDocument()
+    expect(screen.getByText(/Text Objects/)).toBeInTheDocument()
+    expect(screen.getByText(/Marks & Jumps/)).toBeInTheDocument()
   })
 
   it('renders motion nodes for Phase 1 (h/j/k/l and others)', () => {
@@ -105,23 +105,25 @@ describe('SkillTreeScreen', () => {
   it('clicking a motion node shows usage count tooltip', () => {
     render(<SkillTreeScreen />)
     fireEvent.click(screen.getByTestId('motion-h'))
-    expect(screen.getByTestId('motion-tooltip')).toBeInTheDocument()
-    expect(screen.getByText(/50/)).toBeInTheDocument()
+    const tooltip = screen.getByTestId('motion-tooltip')
+    expect(tooltip).toBeInTheDocument()
+    expect(within(tooltip).getByText('50')).toBeInTheDocument()
   })
 
   it('clicking a motion with zero usage shows 0 in tooltip', () => {
     render(<SkillTreeScreen />)
     fireEvent.click(screen.getByTestId('motion-l'))
-    expect(screen.getByTestId('motion-tooltip')).toBeInTheDocument()
-    expect(screen.getByText(/5/)).toBeInTheDocument()
+    const tooltip = screen.getByTestId('motion-tooltip')
+    expect(tooltip).toBeInTheDocument()
+    expect(within(tooltip).getByText('5')).toBeInTheDocument()
   })
 
   it('clicking a different motion updates the tooltip', () => {
     render(<SkillTreeScreen />)
     fireEvent.click(screen.getByTestId('motion-h'))
-    expect(screen.getByText(/50/)).toBeInTheDocument()
+    expect(within(screen.getByTestId('motion-tooltip')).getByText('50')).toBeInTheDocument()
     fireEvent.click(screen.getByTestId('motion-j'))
-    expect(screen.getByText(/30/)).toBeInTheDocument()
+    expect(within(screen.getByTestId('motion-tooltip')).getByText('30')).toBeInTheDocument()
   })
 
   it('back button navigates to worldMap', () => {

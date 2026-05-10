@@ -455,9 +455,10 @@ wires `useKeyCapture` to `processKey`, exposes state and a `reset(buffer)` funct
 ## Phase 2 — Editor Component
 
 ### SPEC-016 — EditorBuffer Component
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-10
 **Depends on:** SPEC-015
 **Branch:** `feat/SPEC-016-editor-buffer`
 
@@ -521,9 +522,10 @@ Uses absolute positioning over the EditorBuffer grid.
 ---
 
 ### SPEC-018 — LineNumbers and StatusBar Components
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-10
 **Depends on:** SPEC-006, SPEC-002
 **Branch:** `feat/SPEC-018-line-numbers-status-bar`
 
@@ -591,9 +593,10 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ---
 
 ### SPEC-020 — HintPanel and KeyHistoryDisplay Components
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-002
 **Branch:** `feat/SPEC-020-hint-panel`
 
@@ -869,9 +872,10 @@ XP bar animates from old value to new value over 600ms. "Continue" button advanc
 ## Phase 4 — World Map and Navigation
 
 ### SPEC-028 — Custom Router
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-004
 **Branch:** `feat/SPEC-028-custom-router`
 

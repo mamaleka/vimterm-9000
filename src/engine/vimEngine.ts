@@ -998,6 +998,151 @@ function executeTextObject(
   }
 }
 
+// ─── Jump list helpers ────────────────────────────────────────────────────────
+
+/**
+ * Push the current cursor position onto the jump list, truncating any forward
+ * history (entries after jumpIndex) before pushing. This matches Vim semantics:
+ * a new jump always clears any "redo" jump entries.
+ */
+function pushJump(state: VimState): VimState {
+  const { cursor, jumpList, jumpIndex } = state
+  // Truncate forward history: keep entries [0..jumpIndex] inclusive, then add current
+  const base = jumpIndex >= 0 ? jumpList.slice(0, jumpIndex + 1) : []
+  const newList = [...base, { row: cursor.row, col: cursor.col }]
+  return { ...state, jumpList: newList, jumpIndex: newList.length - 1 }
+}
+
+// ─── Matching bracket helpers ─────────────────────────────────────────────────
+
+const BRACKET_PAIRS: Record<string, { open: string; close: string; dir: 'forward' | 'backward' }> = {
+  '(': { open: '(', close: ')', dir: 'forward' },
+  ')': { open: '(', close: ')', dir: 'backward' },
+  '[': { open: '[', close: ']', dir: 'forward' },
+  ']': { open: '[', close: ']', dir: 'backward' },
+  '{': { open: '{', close: '}', dir: 'forward' },
+  '}': { open: '{', close: '}', dir: 'backward' },
+}
+
+/**
+ * Find the matching bracket for the character at cursor.
+ * Returns the new position, or null if not found or not on a bracket.
+ * Handles nesting correctly by tracking depth.
+ */
+function findMatchingBracket(
+  buffer: string[],
+  cursor: { row: number; col: number },
+): { row: number; col: number } | null {
+  const line = buffer[cursor.row] ?? ''
+  const ch = line[cursor.col]
+  if (ch === undefined) return null
+
+  const pair = BRACKET_PAIRS[ch]
+  if (!pair) return null
+
+  let depth = 0
+  const step = pair.dir === 'forward' ? 1 : -1
+  const seekChar = pair.dir === 'forward' ? pair.close : pair.open
+  const nestChar = pair.dir === 'forward' ? pair.open : pair.close
+
+  for (let c = cursor.col; c >= 0 && c < line.length; c += step) {
+    if (line[c] === nestChar) depth++
+    else if (line[c] === seekChar) {
+      depth--
+      if (depth === 0) return { row: cursor.row, col: c }
+    }
+  }
+  return null
+}
+
+// ─── Paragraph motion helpers ─────────────────────────────────────────────────
+
+/**
+ * Move backward to the nearest blank line before the current paragraph.
+ * Starting from cursor row, finds the blank line (or row 0) that precedes
+ * the paragraph containing the cursor.
+ * Returns the new cursor position (col 0).
+ */
+function moveParagraphBackward(
+  buffer: string[],
+  cursor: { row: number; col: number },
+): { row: number; col: number } {
+  let row = cursor.row
+  if (row === 0) return { row: 0, col: 0 }
+
+  // If on a blank line, step up past consecutive blanks first
+  if (isBlankLine(buffer[row] ?? '')) {
+    row--
+    while (row > 0 && isBlankLine(buffer[row] ?? '')) row--
+    // Now on the last line of the paragraph above — skip that paragraph upward
+    while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) row--
+  } else {
+    // On a non-blank line: step up to the start of the current paragraph
+    while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) row--
+  }
+
+  // row is now the first line of a paragraph; the blank line above is row-1
+  return { row: Math.max(0, row - 1), col: 0 }
+}
+
+/**
+ * Move forward to the nearest blank line after the current paragraph.
+ * If no blank line exists below, moves to last row.
+ * Returns the new cursor position (col 0).
+ */
+function moveParagraphForward(
+  buffer: string[],
+  cursor: { row: number; col: number },
+): { row: number; col: number } {
+  const lastRow = buffer.length - 1
+  let row = cursor.row
+
+  if (row === lastRow) return { row: lastRow, col: 0 }
+
+  // If on a blank line, step down past consecutive blanks first
+  if (isBlankLine(buffer[row] ?? '')) {
+    row++
+    while (row < lastRow && isBlankLine(buffer[row] ?? '')) row++
+    // Now on the first line of the next paragraph — skip it downward
+    while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) row++
+  } else {
+    // On a non-blank line: step down to the end of the current paragraph
+    while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) row++
+  }
+
+  // row is now the last line of a paragraph; the blank line below is row+1
+  return { row: Math.min(lastRow, row + 1), col: 0 }
+}
+
+// ─── Word under cursor helper ─────────────────────────────────────────────────
+
+/**
+ * Extract the word (contiguous word characters) under the cursor.
+ * Returns the word string, or null if cursor is not on a word character.
+ */
+function wordUnderCursor(
+  buffer: string[],
+  cursor: { row: number; col: number },
+): string | null {
+  const line = buffer[cursor.row] ?? ''
+  const ch = line[cursor.col]
+  if (ch === undefined || !isWordChar(ch)) return null
+
+  // Find start of word
+  let start = cursor.col
+  while (start > 0 && isWordChar(line[start - 1]!)) {
+    start--
+  }
+
+  // Find end of word (exclusive)
+  let end = cursor.col
+  while (end < line.length && isWordChar(line[end]!)) {
+    end++
+  }
+
+  return line.slice(start, end)
+}
+
 // ─── Normal mode ─────────────────────────────────────────────────────────────
 
 function processKeyNormal(state: VimState, key: string): VimState {
@@ -1013,7 +1158,8 @@ function processKeyNormal(state: VimState, key: string): VimState {
       const dir = state.pendingMotion[0] === '/' ? 'forward' : 'backward'
       const pattern = state.pendingMotion.slice(1).join('')
       if (!pattern) return { ...state, pendingMotion: [] }
-      const newState = { ...state, searchPattern: pattern, pendingMotion: [] }
+      const stateWithJump = pushJump(state)
+      const newState = { ...stateWithJump, searchPattern: pattern, pendingMotion: [] }
       return executeSearch(newState, dir)
     }
     if (key === 'Escape') {
@@ -1022,13 +1168,38 @@ function processKeyNormal(state: VimState, key: string): VimState {
     return { ...state, pendingMotion: [...state.pendingMotion, key] }
   }
 
-  // Pending two-key find motions (f/F/t/T)
+  // Pending two-key find motions (f/F/t/T) and mark/jump motions (m, ', `)
   if (state.pendingMotion.length > 0) {
     const pending = state.pendingMotion[0]!
     if (pending === 'f' || pending === 'F' || pending === 't' || pending === 'T') {
       const direction: 'forward' | 'backward' = (pending === 'f' || pending === 't') ? 'forward' : 'backward'
       const till = pending === 't' || pending === 'T'
       return executeFindMotion(state, key, direction, till)
+    }
+
+    // m<char> — set mark
+    if (pending === 'm') {
+      return {
+        ...state,
+        pendingMotion: [],
+        marks: { ...state.marks, [key]: { row: cursor.row, col: cursor.col } },
+      }
+    }
+
+    // '<char> — jump to line of mark (col 0)
+    if (pending === "'") {
+      const mark = state.marks[key]
+      if (!mark) return { ...state, pendingMotion: [] }
+      const stateWithJump = pushJump(state)
+      return { ...stateWithJump, pendingMotion: [], cursor: { row: mark.row, col: 0 } }
+    }
+
+    // `<char> — jump to exact position of mark
+    if (pending === '`') {
+      const mark = state.marks[key]
+      if (!mark) return { ...state, pendingMotion: [] }
+      const stateWithJump = pushJump(state)
+      return { ...stateWithJump, pendingMotion: [], cursor: { row: mark.row, col: mark.col } }
     }
 
     // Text object pending: operator + scope ('i'/'a') + delimiter key
@@ -1117,11 +1288,13 @@ function processKeyNormal(state: VimState, key: string): VimState {
       return { ...state, cursor: { row: cursor.row, col } }
     }
     case 'G': {
-      return { ...state, cursor: { row: lastRow, col: 0 } }
+      const stateWithJump = pushJump(state)
+      return { ...stateWithJump, cursor: { row: lastRow, col: 0 } }
     }
     case 'g': {
       if (state.pendingMotion.includes('g')) {
-        return { ...state, cursor: { row: 0, col: 0 }, pendingMotion: [] }
+        const stateWithJump = pushJump({ ...state, pendingMotion: [] })
+        return { ...stateWithJump, cursor: { row: 0, col: 0 }, pendingMotion: [] }
       }
       return { ...state, pendingMotion: ['g'] }
     }
@@ -1138,10 +1311,12 @@ function processKeyNormal(state: VimState, key: string): VimState {
       return { ...state, pendingMotion: ['?'] }
     }
     case 'n': {
-      return executeSearch(state, 'forward')
+      const stateWithJump = pushJump(state)
+      return executeSearch(stateWithJump, 'forward')
     }
     case 'N': {
-      return executeSearch(state, 'backward')
+      const stateWithJump = pushJump(state)
+      return executeSearch(stateWithJump, 'backward')
     }
     case ';': {
       if (!state.lastFindChar || !state.lastFindDirection) return state
@@ -1151,6 +1326,61 @@ function processKeyNormal(state: VimState, key: string): VimState {
       if (!state.lastFindChar || !state.lastFindDirection) return state
       const reversed: 'forward' | 'backward' = state.lastFindDirection === 'forward' ? 'backward' : 'forward'
       return executeFindMotion(state, state.lastFindChar, reversed, state.lastFindTill)
+    }
+    case 'm': {
+      return { ...state, pendingMotion: ['m'] }
+    }
+    case "'": {
+      return { ...state, pendingMotion: ["'"] }
+    }
+    case '`': {
+      return { ...state, pendingMotion: ['`'] }
+    }
+    case '%': {
+      const match = findMatchingBracket(buffer, cursor)
+      if (match === null) return state
+      const stateWithJump = pushJump(state)
+      return { ...stateWithJump, cursor: match }
+    }
+    case '{': {
+      const newPos = moveParagraphBackward(buffer, cursor)
+      return { ...state, cursor: newPos }
+    }
+    case '}': {
+      const newPos = moveParagraphForward(buffer, cursor)
+      return { ...state, cursor: newPos }
+    }
+    case '*': {
+      const word = wordUnderCursor(buffer, cursor)
+      if (!word) return state
+      const stateWithJump = pushJump(state)
+      const stateWithPattern = { ...stateWithJump, searchPattern: word }
+      return executeSearch(stateWithPattern, 'forward')
+    }
+    case '#': {
+      const word = wordUnderCursor(buffer, cursor)
+      if (!word) return state
+      const stateWithJump = pushJump(state)
+      const stateWithPattern = { ...stateWithJump, searchPattern: word }
+      return executeSearch(stateWithPattern, 'backward')
+    }
+    case '<C-o>': {
+      const { jumpList, jumpIndex } = state
+      if (jumpList.length === 0) return state
+      // Jump to jumpList[jumpIndex], then decrement (floor at 0)
+      const target = jumpList[jumpIndex]
+      if (!target) return state
+      const newIndex = Math.max(0, jumpIndex - 1)
+      return { ...state, cursor: { row: target.row, col: target.col }, jumpIndex: newIndex }
+    }
+    case '<C-i>': {
+      const { jumpList, jumpIndex } = state
+      if (jumpList.length === 0) return state
+      if (jumpIndex >= jumpList.length - 1) return state
+      const newIndex = jumpIndex + 1
+      const target = jumpList[newIndex]
+      if (!target) return state
+      return { ...state, cursor: { row: target.row, col: target.col }, jumpIndex: newIndex }
     }
     case 'd':
     case 'c':
@@ -1195,7 +1425,8 @@ export function processKey(state: VimState, key: string): VimState {
   // G with explicit count: jump to 1-indexed line
   if (key === 'G' && state.pendingCount !== null) {
     const targetRow = Math.min(count - 1, state.buffer.length - 1)
-    return { ...stateWithReset, cursor: { row: targetRow, col: 0 } }
+    const stateWithJump = pushJump(stateWithReset)
+    return { ...stateWithJump, cursor: { row: targetRow, col: 0 } }
   }
 
   // When operator is pending, pass directly to processKeyNormal (it handles its own count)

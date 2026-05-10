@@ -1431,3 +1431,477 @@ describe('text object no-op when cursor is outside text object', () => {
     expect(s3.buffer[0]).toBe('hello world')
   })
 })
+
+// ─── SPEC-033: Mark and Jump Motions ─────────────────────────────────────────
+
+describe('m — set mark', () => {
+  it('ma sets mark a at current cursor position', () => {
+    const s = createInitialState(['hello', 'world'])
+    const positioned = { ...s, cursor: { row: 1, col: 3 } }
+    const s1 = processKey(positioned, 'm')
+    const s2 = processKey(s1, 'a')
+    expect(s2.marks['a']).toEqual({ row: 1, col: 3 })
+  })
+
+  it('mb sets mark b at cursor position', () => {
+    const s = createInitialState(['hello', 'world'])
+    const positioned = { ...s, cursor: { row: 0, col: 2 } }
+    const s1 = processKey(positioned, 'm')
+    const s2 = processKey(s1, 'b')
+    expect(s2.marks['b']).toEqual({ row: 0, col: 2 })
+  })
+
+  it('setting mark does not move cursor', () => {
+    const s = createInitialState(['hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 2 } }
+    const s1 = processKey(positioned, 'm')
+    const s2 = processKey(s1, 'x')
+    expect(s2.cursor).toEqual({ row: 0, col: 2 })
+  })
+
+  it('setting mark preserves existing marks', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'm')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey({ ...s2, cursor: { row: 1, col: 2 } }, 'm')
+    const s4 = processKey(s3, 'b')
+    expect(s4.marks['a']).toEqual({ row: 0, col: 1 })
+    expect(s4.marks['b']).toEqual({ row: 1, col: 2 })
+  })
+
+  it('overwriting mark a replaces its position', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 0 } }, 'm')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey({ ...s2, cursor: { row: 1, col: 4 } }, 'm')
+    const s4 = processKey(s3, 'a')
+    expect(s4.marks['a']).toEqual({ row: 1, col: 4 })
+  })
+})
+
+describe("' — jump to line of mark (col 0)", () => {
+  it("'a jumps to line of mark a at col 0", () => {
+    const s = createInitialState(['hello', 'world', 'foo'])
+    const withMark = { ...s, marks: { a: { row: 2, col: 3 } } }
+    const s1 = processKey(withMark, "'")
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 2, col: 0 })
+  })
+
+  it("'a with mark on row 1 goes to row 1 col 0", () => {
+    const s = createInitialState(['hello', 'world'])
+    const withMark = { ...s, marks: { a: { row: 1, col: 2 } } }
+    const s1 = processKey(withMark, "'")
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 1, col: 0 })
+  })
+
+  it("'a is a no-op when mark a is not set", () => {
+    const s = createInitialState(['hello', 'world'])
+    const s1 = processKey(s, "'")
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it("' pushes current position onto jumpList before jumping", () => {
+    const s = createInitialState(['hello', 'world', 'foo'])
+    const positioned = { ...s, cursor: { row: 0, col: 2 }, marks: { a: { row: 2, col: 1 } } }
+    const s1 = processKey(positioned, "'")
+    const s2 = processKey(s1, 'a')
+    expect(s2.jumpList).toContainEqual({ row: 0, col: 2 })
+  })
+})
+
+describe('` — jump to exact mark position', () => {
+  it('`a jumps to exact position of mark a', () => {
+    const s = createInitialState(['hello', 'world', 'foo'])
+    const withMark = { ...s, marks: { a: { row: 2, col: 3 } } }
+    const s1 = processKey(withMark, '`')
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 2, col: 3 })
+  })
+
+  it('`a jumps to row AND col of the mark', () => {
+    const s = createInitialState(['hello', 'world'])
+    const withMark = { ...s, marks: { a: { row: 1, col: 4 } } }
+    const s1 = processKey(withMark, '`')
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 1, col: 4 })
+  })
+
+  it('`a is a no-op when mark a is not set', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '`')
+    const s2 = processKey(s1, 'a')
+    expect(s2.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('`a pushes current position onto jumpList before jumping', () => {
+    const s = createInitialState(['hello', 'world'])
+    const positioned = { ...s, cursor: { row: 0, col: 3 }, marks: { a: { row: 1, col: 2 } } }
+    const s1 = processKey(positioned, '`')
+    const s2 = processKey(s1, 'a')
+    expect(s2.jumpList).toContainEqual({ row: 0, col: 3 })
+  })
+})
+
+describe('% — jump to matching bracket', () => {
+  it('% on ( jumps to matching )', () => {
+    const s = createInitialState(['foo(bar)'])
+    const positioned = { ...s, cursor: { row: 0, col: 3 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 7 })
+  })
+
+  it('% on ) jumps to matching (', () => {
+    const s = createInitialState(['foo(bar)'])
+    const positioned = { ...s, cursor: { row: 0, col: 7 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 3 })
+  })
+
+  it('% on [ jumps to matching ]', () => {
+    const s = createInitialState(['arr[0]'])
+    const positioned = { ...s, cursor: { row: 0, col: 3 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 5 })
+  })
+
+  it('% on ] jumps to matching [', () => {
+    const s = createInitialState(['arr[0]'])
+    const positioned = { ...s, cursor: { row: 0, col: 5 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 3 })
+  })
+
+  it('% on { jumps to matching }', () => {
+    const s = createInitialState(['{hello}'])
+    const positioned = { ...s, cursor: { row: 0, col: 0 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 6 })
+  })
+
+  it('% on } jumps to matching {', () => {
+    const s = createInitialState(['{hello}'])
+    const positioned = { ...s, cursor: { row: 0, col: 6 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('% on non-bracket character does not move cursor', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('% with no matching bracket does not move cursor', () => {
+    const s = createInitialState(['foo(bar'])
+    const positioned = { ...s, cursor: { row: 0, col: 3 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 3 })
+  })
+
+  it('% handles nested parentheses — outer ( matches its own )', () => {
+    // In 'foo(bar(baz))' cursor on outer '(' at col 3 should jump to col 12 (outer ')')
+    const s = createInitialState(['foo(bar(baz))'])
+    const positioned = { ...s, cursor: { row: 0, col: 3 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 12 })
+  })
+
+  it('% on inner ( of nested parens jumps to its matching )', () => {
+    const s = createInitialState(['foo(bar(baz))'])
+    const positioned = { ...s, cursor: { row: 0, col: 7 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.cursor).toEqual({ row: 0, col: 11 })
+  })
+
+  it('% pushes current position onto jumpList', () => {
+    const s = createInitialState(['(hello)'])
+    const positioned = { ...s, cursor: { row: 0, col: 0 } }
+    const s1 = processKey(positioned, '%')
+    expect(s1.jumpList).toContainEqual({ row: 0, col: 0 })
+  })
+})
+
+describe('{ — move to previous paragraph boundary', () => {
+  it('{ moves to the blank line before current paragraph', () => {
+    const s = createInitialState([
+      'para1 line1',
+      'para1 line2',
+      '',
+      'para2 line1',
+      'para2 line2',
+    ])
+    // cursor in second paragraph
+    const positioned = { ...s, cursor: { row: 3, col: 0 } }
+    const s1 = processKey(positioned, '{')
+    // Should jump to the blank line (row 2) or start of prev para
+    expect(s1.cursor.row).toBeLessThan(3)
+  })
+
+  it('{ at first line stays at row 0', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s1 = processKey(s, '{')
+    expect(s1.cursor.row).toBe(0)
+  })
+
+  it('{ moves to row 0 when no blank line exists above', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    const positioned = { ...s, cursor: { row: 2, col: 0 } }
+    const s1 = processKey(positioned, '{')
+    expect(s1.cursor.row).toBe(0)
+  })
+
+  it('{ skips to the blank line above current paragraph', () => {
+    const s = createInitialState([
+      '',
+      'line1',
+      'line2',
+      '',
+      'line3',
+    ])
+    const positioned = { ...s, cursor: { row: 4, col: 0 } }
+    const s1 = processKey(positioned, '{')
+    expect(s1.cursor.row).toBe(3)
+    expect(s1.cursor.col).toBe(0)
+  })
+})
+
+describe('} — move to next paragraph boundary', () => {
+  it('} moves to the blank line after current paragraph', () => {
+    const s = createInitialState([
+      'para1 line1',
+      'para1 line2',
+      '',
+      'para2 line1',
+    ])
+    const positioned = { ...s, cursor: { row: 0, col: 0 } }
+    const s1 = processKey(positioned, '}')
+    expect(s1.cursor.row).toBe(2)
+    expect(s1.cursor.col).toBe(0)
+  })
+
+  it('} at last line stays at last row', () => {
+    const s = createInitialState(['hello', 'world'])
+    const positioned = { ...s, cursor: { row: 1, col: 0 } }
+    const s1 = processKey(positioned, '}')
+    expect(s1.cursor.row).toBe(1)
+  })
+
+  it('} moves to last row when no blank line exists below', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    const s1 = processKey(s, '}')
+    expect(s1.cursor.row).toBe(2)
+  })
+
+  it('} skips to the blank line below current paragraph', () => {
+    const s = createInitialState([
+      'line1',
+      'line2',
+      '',
+      'line3',
+      '',
+    ])
+    const positioned = { ...s, cursor: { row: 0, col: 0 } }
+    const s1 = processKey(positioned, '}')
+    expect(s1.cursor.row).toBe(2)
+    expect(s1.cursor.col).toBe(0)
+  })
+})
+
+describe('* — search word under cursor forward', () => {
+  it('* sets searchPattern to word under cursor', () => {
+    const s = createInitialState(['hello world hello'])
+    const s1 = processKey(s, '*')
+    expect(s1.searchPattern).toBe('hello')
+  })
+
+  it('* moves cursor to next occurrence of word', () => {
+    const s = createInitialState(['hello world hello'])
+    const s1 = processKey(s, '*')
+    // cursor was at 'hello' at col 0, next occurrence is at col 12
+    expect(s1.cursor.col).toBe(12)
+  })
+
+  it('* wraps around to first occurrence when at last', () => {
+    const s = createInitialState(['hello world hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 12 } }
+    const s1 = processKey(positioned, '*')
+    expect(s1.cursor.col).toBe(0)
+  })
+
+  it('* on word with no other occurrences does not move cursor', () => {
+    const s = createInitialState(['unique'])
+    const s1 = processKey(s, '*')
+    // sets pattern but no next match found so cursor stays
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+    expect(s1.searchPattern).toBe('unique')
+  })
+
+  it('* pushes current position onto jumpList', () => {
+    const s = createInitialState(['hello world hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 0 } }
+    const s1 = processKey(positioned, '*')
+    expect(s1.jumpList).toContainEqual({ row: 0, col: 0 })
+  })
+})
+
+describe('# — search word under cursor backward', () => {
+  it('# sets searchPattern to word under cursor', () => {
+    const s = createInitialState(['hello world hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 12 } }
+    const s1 = processKey(positioned, '#')
+    expect(s1.searchPattern).toBe('hello')
+  })
+
+  it('# moves cursor to previous occurrence of word', () => {
+    const s = createInitialState(['hello world hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 12 } }
+    const s1 = processKey(positioned, '#')
+    expect(s1.cursor.col).toBe(0)
+  })
+
+  it('# wraps around to last occurrence when at first', () => {
+    const s = createInitialState(['hello world hello'])
+    const s1 = processKey(s, '#')
+    expect(s1.cursor.col).toBe(12)
+  })
+
+  it('# pushes current position onto jumpList', () => {
+    const s = createInitialState(['hello world hello'])
+    const positioned = { ...s, cursor: { row: 0, col: 12 } }
+    const s1 = processKey(positioned, '#')
+    expect(s1.jumpList).toContainEqual({ row: 0, col: 12 })
+  })
+})
+
+describe('<C-o> — jump backward in jump list', () => {
+  it('<C-o> moves to previous position in jump list', () => {
+    const s = createInitialState(['hello', 'world', 'foo'])
+    // Simulate having jumped: jump list has old position, cursor is elsewhere
+    const withJumps = {
+      ...s,
+      cursor: { row: 2, col: 0 },
+      jumpList: [{ row: 0, col: 0 }, { row: 1, col: 2 }],
+      jumpIndex: 1,
+    }
+    const s1 = processKey(withJumps, '<C-o>')
+    expect(s1.cursor).toEqual({ row: 1, col: 2 })
+    expect(s1.jumpIndex).toBe(0)
+  })
+
+  it('<C-o> does nothing when jump list is empty', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '<C-o>')
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('<C-o> does nothing when already at beginning of jump list', () => {
+    const s = createInitialState(['hello', 'world'])
+    const withJumps = {
+      ...s,
+      cursor: { row: 1, col: 0 },
+      jumpList: [{ row: 0, col: 0 }],
+      jumpIndex: 0,
+    }
+    const s1 = processKey(withJumps, '<C-o>')
+    // At jumpIndex 0, Ctrl-o cannot go further back
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('<C-o> twice moves back two positions', () => {
+    const s = createInitialState(['a', 'b', 'c', 'd'])
+    const withJumps = {
+      ...s,
+      cursor: { row: 3, col: 0 },
+      jumpList: [{ row: 0, col: 0 }, { row: 1, col: 0 }, { row: 2, col: 0 }],
+      jumpIndex: 2,
+    }
+    const s1 = processKey(withJumps, '<C-o>')
+    const s2 = processKey(s1, '<C-o>')
+    expect(s2.cursor).toEqual({ row: 1, col: 0 })
+    expect(s2.jumpIndex).toBe(0)
+  })
+})
+
+describe('<C-i> — jump forward in jump list', () => {
+  it('<C-i> moves to next position in jump list', () => {
+    const s = createInitialState(['hello', 'world', 'foo'])
+    const withJumps = {
+      ...s,
+      cursor: { row: 0, col: 0 },
+      jumpList: [{ row: 0, col: 0 }, { row: 2, col: 3 }],
+      jumpIndex: 0,
+    }
+    const s1 = processKey(withJumps, '<C-i>')
+    expect(s1.cursor).toEqual({ row: 2, col: 3 })
+    expect(s1.jumpIndex).toBe(1)
+  })
+
+  it('<C-i> does nothing when jump list is empty', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, '<C-i>')
+    expect(s1.cursor).toEqual({ row: 0, col: 0 })
+  })
+
+  it('<C-i> does nothing when at end of jump list', () => {
+    const s = createInitialState(['hello', 'world'])
+    const withJumps = {
+      ...s,
+      cursor: { row: 1, col: 0 },
+      jumpList: [{ row: 0, col: 0 }, { row: 1, col: 0 }],
+      jumpIndex: 1,
+    }
+    const s1 = processKey(withJumps, '<C-i>')
+    expect(s1.cursor).toEqual({ row: 1, col: 0 })
+  })
+})
+
+describe('jump list management — pushes on jump motions', () => {
+  it('G pushes current position to jump list', () => {
+    const s = createInitialState(['a', 'b', 'c'])
+    const positioned = { ...s, cursor: { row: 0, col: 0 }, jumpList: [], jumpIndex: -1 }
+    const s1 = processKey(positioned, 'G')
+    expect(s1.jumpList).toContainEqual({ row: 0, col: 0 })
+  })
+
+  it('gg pushes current position to jump list', () => {
+    const s = createInitialState(['a', 'b', 'c'])
+    const positioned = { ...s, cursor: { row: 2, col: 0 }, jumpList: [], jumpIndex: -1 }
+    const s1 = processKey(positioned, 'g')
+    const s2 = processKey(s1, 'g')
+    expect(s2.jumpList).toContainEqual({ row: 2, col: 0 })
+  })
+
+  it('n (search next) pushes current position to jump list', () => {
+    const s = createInitialState(['foo bar foo'])
+    const withSearch = { ...s, searchPattern: 'foo', cursor: { row: 0, col: 0 } }
+    const s1 = processKey(withSearch, 'n')
+    expect(s1.jumpList).toContainEqual({ row: 0, col: 0 })
+  })
+})
+
+describe('SPEC-033 regression — existing motions still work', () => {
+  it('h still moves left', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 3 } }, 'h')
+    expect(s2.cursor.col).toBe(2)
+  })
+
+  it('diw still works after marks added', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    expect(s3.buffer[0]).toBe(' world')
+  })
+
+  it('i/a text object scope pending still works (not mistaken for backtick)', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('""')
+  })
+})

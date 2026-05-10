@@ -1363,9 +1363,10 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ---
 
 ### SPEC-043 — LessonScreen
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-022, SPEC-019
 **Branch:** `feat/SPEC-043-lesson-screen`
 
@@ -1433,4 +1434,4 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-040 | Boss Data | DONE | 7 |
 | SPEC-041 | BossFightScreen | TODO | 7 |
 | SPEC-042 | SettingsScreen | DONE | 8 |
-| SPEC-043 | LessonScreen | REVIEW | 8 |
+| SPEC-043 | LessonScreen | DONE | 8 |

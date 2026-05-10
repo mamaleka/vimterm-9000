@@ -1,6 +1,9 @@
 import { TerminalWindow } from '../components/ui/TerminalWindow'
 import { useStore } from '../store'
 
+const NAV_BUTTON_CLASSES =
+  'border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors'
+
 export function HomeScreen() {
   const displayName = useStore((s) => s.displayName)
   const xp = useStore((s) => s.xp)
@@ -54,28 +57,16 @@ export function HomeScreen() {
         </div>
 
         <div className="flex flex-col gap-4 w-full max-w-md">
-          <button
-            onClick={() => navigateTo('worldMap')}
-            className="border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors"
-          >
+          <button onClick={() => navigateTo('worldMap')} className={NAV_BUTTON_CLASSES}>
             WORLD MAP
           </button>
-          <button
-            onClick={() => navigateTo('skillTree')}
-            className="border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors"
-          >
+          <button onClick={() => navigateTo('skillTree')} className={NAV_BUTTON_CLASSES}>
             SKILL TREE
           </button>
-          <button
-            onClick={() => navigateTo('settings')}
-            className="border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors"
-          >
+          <button onClick={() => navigateTo('settings')} className={NAV_BUTTON_CLASSES}>
             SETTINGS
           </button>
-          <button
-            onClick={() => navigateTo('profile')}
-            className="border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors"
-          >
+          <button onClick={() => navigateTo('profile')} className={NAV_BUTTON_CLASSES}>
             PROFILE
           </button>
         </div>

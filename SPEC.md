@@ -790,7 +790,9 @@ Lv11+: +1500 per level
 ---
 
 ### SPEC-025 — ReachTarget Challenge Component
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-019, SPEC-021, SPEC-022
 **Branch:** `feat/SPEC-025-reach-target`
 
@@ -1404,7 +1406,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-022 | Zone 1 Curriculum Data | DONE | 3 |
 | SPEC-023 | XP + Level Utils | DONE | 3 |
 | SPEC-024 | Streak Utils | DONE | 3 |
-| SPEC-025 | ReachTarget Challenge | TODO | 3 |
+| SPEC-025 | ReachTarget Challenge | REVIEW | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
 | SPEC-027 | ChallengeCompleteScreen | DONE | 3 |
 | SPEC-028 | Custom Router | DONE | 4 |

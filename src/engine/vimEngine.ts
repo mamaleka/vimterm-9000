@@ -6,6 +6,7 @@ export function createInitialState(buffer: string[]): VimState {
     buffer,
     cursor: { row: 0, col: 0 },
     register: '',
+    registerType: 'char',
     pendingOperator: null,
     pendingCount: null,
     pendingMotion: [],
@@ -17,6 +18,7 @@ export function createInitialState(buffer: string[]): VimState {
     lastFindTill: false,
     searchPattern: null,
     lastAction: null,
+    insertedText: '',
     visitedPositions: [],
     motionCounts: {},
   }
@@ -42,8 +44,6 @@ function isSpace(ch: string): boolean {
   return /\s/.test(ch)
 }
 
-// Returns the "token type" at a position: 'word', 'nonword', or 'space'
-// Used to determine word boundaries for the `w` motion
 function tokenType(ch: string): 'word' | 'nonword' | 'space' {
   if (isSpace(ch)) return 'space'
   if (isWordChar(ch)) return 'word'
@@ -57,7 +57,6 @@ function moveWordForward(
   const totalRows = buffer.length
   let { row, col } = cursor
 
-  // Helper: last valid position in buffer
   const bufferEnd = (): { row: number; col: number } => {
     const lastRow = totalRows - 1
     const lastLine = buffer[lastRow] ?? ''
@@ -66,7 +65,6 @@ function moveWordForward(
 
   const line = buffer[row] ?? ''
 
-  // On an empty line, move to the next line
   if (line.length === 0) {
     if (row + 1 < totalRows) {
       return { row: row + 1, col: 0 }
@@ -74,7 +72,6 @@ function moveWordForward(
     return { row, col: 0 }
   }
 
-  // Already past end of line (shouldn't happen, but guard)
   if (col >= line.length) {
     if (row + 1 < totalRows) {
       return { row: row + 1, col: 0 }
@@ -84,7 +81,6 @@ function moveWordForward(
 
   const curType = tokenType(line[col]!)
 
-  // Skip current token (word chars or non-word/non-space chars)
   let c = col
   if (curType !== 'space') {
     while (c < line.length && tokenType(line[c]!) === curType) {
@@ -92,19 +88,15 @@ function moveWordForward(
     }
   }
 
-  // Skip spaces
   while (c < line.length && isSpace(line[c]!)) {
     c++
   }
 
-  // If we found a new token on this line, land there
   if (c < line.length) {
     return { row, col: c }
   }
 
-  // No more tokens on this line — try next line
   if (row + 1 < totalRows) {
-    // Skip leading spaces on next line
     let nextCol = 0
     const nextLine = buffer[row + 1] ?? ''
     while (nextCol < nextLine.length && isSpace(nextLine[nextCol]!)) {
@@ -113,7 +105,6 @@ function moveWordForward(
     return { row: row + 1, col: nextCol }
   }
 
-  // We are at or past the last token on the last line — go to buffer end
   return bufferEnd()
 }
 
@@ -123,10 +114,8 @@ function moveWordBackward(
 ): { row: number; col: number } {
   let { row, col } = cursor
 
-  // Already at buffer start
   if (row === 0 && col === 0) return { row, col }
 
-  // Step one position back
   if (col === 0) {
     row--
     col = Math.max(0, (buffer[row] ?? '').length - 1)
@@ -134,7 +123,6 @@ function moveWordBackward(
     col--
   }
 
-  // Skip spaces backward
   while (true) {
     const line = buffer[row] ?? ''
     if (col >= 0 && col < line.length && !isSpace(line[col]!)) break
@@ -144,12 +132,10 @@ function moveWordBackward(
       row--
       col = Math.max(0, (buffer[row] ?? '').length - 1)
     } else {
-      // At very start of buffer
       return { row: 0, col: 0 }
     }
   }
 
-  // Now at the last char of a token — find its start
   const line = buffer[row] ?? ''
   const atWordChar = isWordChar(line[col]!)
   while (col > 0 && isWordChar(line[col - 1]!) === atWordChar) {
@@ -166,20 +152,17 @@ function moveWordEnd(
   const totalRows = buffer.length
   let { row, col } = cursor
 
-  // Helper: last valid position in buffer
   const bufferEnd = (): { row: number; col: number } => {
     const lastRow = totalRows - 1
     const lastLine = buffer[lastRow] ?? ''
     return { row: lastRow, col: Math.max(0, lastLine.length - 1) }
   }
 
-  // Already at buffer end
   const lastLine = buffer[totalRows - 1] ?? ''
   if (row === totalRows - 1 && col >= Math.max(0, lastLine.length - 1)) {
     return bufferEnd()
   }
 
-  // Advance one step first
   const currentLine = buffer[row] ?? ''
   if (col + 1 < currentLine.length) {
     col++
@@ -190,7 +173,6 @@ function moveWordEnd(
     return bufferEnd()
   }
 
-  // Skip spaces across lines
   while (row < totalRows) {
     const ln = buffer[row] ?? ''
     while (col < ln.length && isSpace(ln[col]!)) {
@@ -207,7 +189,6 @@ function moveWordEnd(
 
   if (row >= totalRows) return bufferEnd()
 
-  // Move to end of this token
   const ln = buffer[row] ?? ''
   const startType = tokenType(ln[col]!)
   while (col + 1 < ln.length && tokenType(ln[col + 1]!) === startType) {
@@ -311,11 +292,360 @@ function executeSearch(state: VimState, direction: 'forward' | 'backward'): VimS
   return { ...state, cursor: match }
 }
 
-function processKeyOnce(state: VimState, key: string): VimState {
+// ─── Operator helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Compute where a motion would take the cursor (without modifying state).
+ * Returns null for unrecognized motions.
+ */
+function computeMotionEnd(
+  buffer: string[],
+  cursor: { row: number; col: number },
+  motion: string,
+  count: number,
+): { row: number; col: number } | null {
+  let pos = { ...cursor }
+  for (let i = 0; i < count; i++) {
+    switch (motion) {
+      case 'w':
+        pos = moveWordForward(buffer, pos)
+        break
+      case 'b':
+        pos = moveWordBackward(buffer, pos)
+        break
+      case 'e':
+        pos = moveWordEnd(buffer, pos)
+        break
+      case '$': {
+        const line = buffer[pos.row] ?? ''
+        pos = { row: pos.row, col: Math.max(0, line.length - 1) }
+        break
+      }
+      case '0':
+        pos = { row: pos.row, col: 0 }
+        break
+      case '^': {
+        const line = buffer[pos.row] ?? ''
+        pos = { row: pos.row, col: firstNonWhitespaceCol(line) }
+        break
+      }
+      case 'h':
+        pos = { row: pos.row, col: Math.max(0, pos.col - 1) }
+        break
+      case 'l': {
+        const line = buffer[pos.row] ?? ''
+        pos = { row: pos.row, col: Math.min(Math.max(0, line.length - 1), pos.col + 1) }
+        break
+      }
+      default:
+        return null
+    }
+  }
+  return pos
+}
+
+/**
+ * For the `w` motion used with an operator: returns the exclusive end position.
+ *
+ * - For `d` (and `y`): behaves like moveWordForward but deletes to EOL when at last word.
+ * - For `c`: acts like `e` motion (end of word, inclusive), i.e. `cw` = `ce`.
+ *   This matches Vim semantics where `cw` does NOT consume trailing whitespace.
+ */
+function computeWordMotionForOperator(
+  buffer: string[],
+  cursor: { row: number; col: number },
+  count: number,
+  operator: 'd' | 'c' | 'y',
+): { row: number; col: number } {
+  // For 'c' operator: use word-end semantics (cw = ce in Vim)
+  if (operator === 'c') {
+    let pos = { ...cursor }
+    for (let i = 0; i < count; i++) {
+      pos = moveWordEnd(buffer, pos)
+    }
+    // moveWordEnd returns the last char of the word; deletion is inclusive, so +1
+    return { row: pos.row, col: pos.col + 1 }
+  }
+
+  // For 'd' and 'y': delete to start of next word (including trailing space)
+  let pos = { ...cursor }
+  for (let i = 0; i < count; i++) {
+    const nextPos = moveWordForward(buffer, pos)
+    const lastRow = buffer.length - 1
+    const lastLine = buffer[lastRow] ?? ''
+    const bufferEndCol = Math.max(0, lastLine.length - 1)
+    const isAtBufferEnd = nextPos.row === lastRow && nextPos.col === bufferEndCol
+    if (isAtBufferEnd && nextPos.row === pos.row) {
+      // Delete to end of current line (including last char)
+      const line = buffer[pos.row] ?? ''
+      return { row: pos.row, col: line.length }
+    }
+    pos = nextPos
+  }
+  return pos
+}
+
+/**
+ * Execute an operator (d, c, y) paired with a motion.
+ */
+function executeOperator(
+  state: VimState,
+  operator: 'd' | 'c' | 'y',
+  motion: string,
+  count: number,
+): VimState {
+  const { cursor, buffer } = state
+
+  // ── Linewise operations: dd / cc / yy ─────────────────────────────────────
+  if (motion === 'd' || motion === 'y' || motion === 'c') {
+    const yankContent = buffer[cursor.row] ?? ''
+
+    if (operator === 'y') {
+      return {
+        ...state,
+        register: yankContent,
+        registerType: 'line',
+        pendingOperator: null,
+        pendingCount: null,
+        lastAction: { type: 'operator', operator, motion, count },
+      }
+    }
+
+    // 'd' or 'c': delete the line
+    let newBuffer: string[]
+    let newRow: number
+
+    if (buffer.length === 1) {
+      newBuffer = ['']
+      newRow = 0
+    } else {
+      newBuffer = [...buffer]
+      newBuffer.splice(cursor.row, 1)
+      newRow = Math.min(cursor.row, newBuffer.length - 1)
+    }
+
+    const newCursor = { row: newRow, col: clampCol(0, newBuffer[newRow] ?? '') }
+
+    return {
+      ...state,
+      buffer: newBuffer,
+      cursor: operator === 'c' ? { row: cursor.row > newBuffer.length - 1 ? newBuffer.length - 1 : cursor.row, col: 0 } : newCursor,
+      register: yankContent,
+      registerType: 'line',
+      mode: operator === 'c' ? 'insert' : 'normal',
+      pendingOperator: null,
+      pendingCount: null,
+      insertedText: operator === 'c' ? '' : state.insertedText,
+      lastAction: { type: 'operator', operator, motion, count: 1 },
+    }
+  }
+
+  // ── Charwise motions ────────────────────────────────────────────────────────
+
+  // Use operator-specific word end for 'w'
+  // (c: word-end semantics; d: includes trailing space, deletes to EOL at last word)
+  let endPos: { row: number; col: number } | null
+  if (motion === 'w') {
+    endPos = computeWordMotionForOperator(buffer, cursor, count, operator)
+  } else {
+    endPos = computeMotionEnd(buffer, cursor, motion, count)
+  }
+
+  if (endPos === null) {
+    return { ...state, pendingOperator: null, pendingCount: null }
+  }
+
+  const startRow = cursor.row
+  const startCol = cursor.col
+  const endRow = endPos.row
+  const endCol = endPos.col
+
+  // Shared result builder: operator result on same row with charwise register.
+  const mkResult = (
+    newBuffer: string[],
+    newCursorCol: number,
+    deletedText: string,
+  ): VimState => ({
+    ...state,
+    buffer: newBuffer,
+    cursor: { row: startRow, col: newCursorCol },
+    register: deletedText,
+    registerType: 'char',
+    mode: operator === 'c' ? 'insert' : 'normal',
+    pendingOperator: null,
+    pendingCount: null,
+    insertedText: operator === 'c' ? '' : state.insertedText,
+    lastAction: { type: 'operator', operator, motion, count },
+  })
+
+  if (operator === 'y') {
+    // Yank: no buffer modification
+    let yankText = ''
+    if (startRow === endRow) {
+      const line = buffer[startRow] ?? ''
+      yankText = line.slice(Math.min(startCol, endCol), Math.max(startCol, endCol))
+    }
+    return mkResult(buffer, startCol, yankText)
+  }
+
+  // 'd' and 'c' operators: modify buffer
+
+  if (motion === '$') {
+    // '$' is inclusive to end of line; cursor for 'd' moves one left after deletion.
+    const line = buffer[startRow] ?? ''
+    const deletedText = line.slice(startCol)
+    const newBuffer = [...buffer]
+    newBuffer[startRow] = line.slice(0, startCol)
+    const finalCol = operator === 'c' ? startCol : Math.max(0, startCol - 1)
+    return mkResult(newBuffer, finalCol, deletedText)
+  }
+
+  // All other motions: exclusive [startCol, endCol) on same row, or multi-row
+  if (startRow === endRow) {
+    const line = buffer[startRow] ?? ''
+    const fromCol = Math.min(startCol, endCol)
+    const toCol = Math.max(startCol, endCol)
+    const deletedText = line.slice(fromCol, toCol)
+    const newBuffer = [...buffer]
+    newBuffer[startRow] = line.slice(0, fromCol) + line.slice(toCol)
+    return mkResult(newBuffer, fromCol, deletedText)
+  }
+
+  // Multi-row deletion
+  const startLine = buffer[startRow] ?? ''
+  const endLine = buffer[endRow] ?? ''
+  const deletedText = startLine.slice(startCol) + '\n' + endLine.slice(0, endCol)
+  const newBuffer = [...buffer]
+  newBuffer.splice(startRow, endRow - startRow + 1, startLine.slice(0, startCol) + endLine.slice(endCol))
+  return mkResult(newBuffer, startCol, deletedText)
+}
+
+// ─── Paste ───────────────────────────────────────────────────────────────────
+
+function executePaste(state: VimState, before: boolean): VimState {
+  const { buffer, cursor, register, registerType } = state
+
+  if (register === '') return state
+
+  if (registerType === 'line') {
+    const newBuffer = [...buffer]
+    const insertRow = before ? cursor.row : cursor.row + 1
+    newBuffer.splice(insertRow, 0, register)
+    return {
+      ...state,
+      buffer: newBuffer,
+      cursor: { row: insertRow, col: 0 },
+    }
+  }
+
+  // Charwise paste
+  const line = buffer[cursor.row] ?? ''
+  let newLine: string
+  let newCol: number
+
+  if (before) {
+    newLine = line.slice(0, cursor.col) + register + line.slice(cursor.col)
+    newCol = cursor.col + register.length - 1
+  } else {
+    const insertAt = Math.min(cursor.col + 1, line.length)
+    newLine = line.slice(0, insertAt) + register + line.slice(insertAt)
+    newCol = insertAt + register.length - 1
+  }
+
+  const newBuffer = [...buffer]
+  newBuffer[cursor.row] = newLine
+
+  return {
+    ...state,
+    buffer: newBuffer,
+    cursor: { row: cursor.row, col: newCol },
+  }
+}
+
+// ─── Insert mode ─────────────────────────────────────────────────────────────
+
+function processInsertMode(state: VimState, key: string): VimState {
+  const { cursor, buffer } = state
+  const line = buffer[cursor.row] ?? ''
+
+  if (key === 'Escape') {
+    // Clamp to valid normal-mode cursor (not past last char)
+    const newCol = line.length === 0 ? 0 : Math.max(0, Math.min(cursor.col, line.length - 1))
+
+    // Store inserted text in lastAction for 'c' operations (dot-repeat)
+    const lastAction = state.lastAction
+    const updatedLastAction =
+      lastAction && lastAction.operator === 'c'
+        ? { ...lastAction, text: state.insertedText }
+        : lastAction
+
+    return {
+      ...state,
+      mode: 'normal',
+      cursor: { row: cursor.row, col: newCol },
+      insertedText: '',
+      lastAction: updatedLastAction,
+    }
+  }
+
+  if (key === 'Backspace') {
+    if (cursor.col === 0) return state
+    const newLine = line.slice(0, cursor.col - 1) + line.slice(cursor.col)
+    const newBuffer = [...buffer]
+    newBuffer[cursor.row] = newLine
+    return {
+      ...state,
+      buffer: newBuffer,
+      cursor: { row: cursor.row, col: cursor.col - 1 },
+      insertedText: state.insertedText.slice(0, -1),
+    }
+  }
+
+  // Regular character: insert at cursor position
+  const newLine = line.slice(0, cursor.col) + key + line.slice(cursor.col)
+  const newBuffer = [...buffer]
+  newBuffer[cursor.row] = newLine
+  return {
+    ...state,
+    buffer: newBuffer,
+    cursor: { row: cursor.row, col: cursor.col + 1 },
+    insertedText: state.insertedText + key,
+  }
+}
+
+// ─── Dot repeat ──────────────────────────────────────────────────────────────
+
+function executeDotRepeat(state: VimState): VimState {
+  const { lastAction } = state
+  if (!lastAction) return state
+
+  const operator = lastAction.operator as 'd' | 'c' | 'y' | undefined
+  if (!operator) return state
+
+  const motion = lastAction.motion ?? ''
+  const count = lastAction.count ?? 1
+
+  if (operator === 'c' && lastAction.text !== undefined) {
+    // Replay: execute operator then type recorded text
+    let newState = executeOperator(state, 'c', motion, count)
+    for (const ch of lastAction.text) {
+      newState = processInsertMode(newState, ch)
+    }
+    newState = processInsertMode(newState, 'Escape')
+    // Preserve lastAction so dot-repeat remains repeatable
+    return { ...newState, lastAction }
+  }
+
+  return executeOperator(state, operator, motion, count)
+}
+
+// ─── Normal mode ─────────────────────────────────────────────────────────────
+
+function processKeyNormal(state: VimState, key: string): VimState {
   const { cursor, buffer } = state
   const lastRow = buffer.length - 1
 
-  // Handle pending search accumulation (/ and ?)
+  // Pending search accumulation (/ and ?)
   if (
     state.pendingMotion.length > 0 &&
     (state.pendingMotion[0] === '/' || state.pendingMotion[0] === '?')
@@ -333,7 +663,7 @@ function processKeyOnce(state: VimState, key: string): VimState {
     return { ...state, pendingMotion: [...state.pendingMotion, key] }
   }
 
-  // Handle pending two-key find motions
+  // Pending two-key find motions (f/F/t/T)
   if (state.pendingMotion.length > 0) {
     const pending = state.pendingMotion[0]!
     if (pending === 'f' || pending === 'F' || pending === 't' || pending === 'T') {
@@ -341,6 +671,33 @@ function processKeyOnce(state: VimState, key: string): VimState {
       const till = pending === 't' || pending === 'T'
       return executeFindMotion(state, key, direction, till)
     }
+  }
+
+  // Operator pending: next key is the motion (or same key for linewise)
+  if (state.pendingOperator !== null) {
+    const op = state.pendingOperator as 'd' | 'c' | 'y'
+    const count = state.pendingCount ?? 1
+
+    // Accumulate digits while in operator-pending mode
+    if (/^[0-9]$/.test(key) && !(key === '0' && state.pendingCount === null)) {
+      const digit = parseInt(key, 10)
+      const newCount = state.pendingCount === null ? digit : state.pendingCount * 10 + digit
+      return { ...state, pendingCount: newCount }
+    }
+
+    // Same key twice = linewise (dd, yy, cc)
+    if (key === op) {
+      return executeOperator({ ...state, pendingCount: null }, op, op, 1)
+    }
+
+    // Recognized motion keys
+    const motionKeys = ['w', 'b', 'e', '$', '0', '^', 'h', 'l', 'j', 'k']
+    if (motionKeys.includes(key)) {
+      return executeOperator({ ...state, pendingCount: null }, op, key, count)
+    }
+
+    // Unknown key cancels pending operator
+    return { ...state, pendingOperator: null, pendingCount: null }
   }
 
   switch (key) {
@@ -419,16 +776,38 @@ function processKeyOnce(state: VimState, key: string): VimState {
       const reversed: 'forward' | 'backward' = state.lastFindDirection === 'forward' ? 'backward' : 'forward'
       return executeFindMotion(state, state.lastFindChar, reversed, state.lastFindTill)
     }
+    case 'd':
+    case 'c':
+    case 'y': {
+      return { ...state, pendingOperator: key, pendingCount: null }
+    }
+    case 'p': {
+      return executePaste(state, false)
+    }
+    case 'P': {
+      return executePaste(state, true)
+    }
+    case '.': {
+      return executeDotRepeat(state)
+    }
     default:
       return state
   }
 }
 
 export function processKey(state: VimState, key: string): VimState {
-  // Accumulate digits into pendingCount.
-  // '0' only joins the count when a count is already in progress;
-  // otherwise it falls through to the col-0 motion in processKeyOnce.
-  if (/^[1-9]$/.test(key) || (key === '0' && state.pendingCount !== null)) {
+  // Insert mode: all keys go to insert handler
+  if (state.mode === 'insert') {
+    return processInsertMode(state, key)
+  }
+
+  // Normal mode: accumulate digits into pendingCount.
+  // '0' only joins count when count already started.
+  // Skip digit accumulation if operator is pending.
+  if (
+    (/^[1-9]$/.test(key) || (key === '0' && state.pendingCount !== null)) &&
+    state.pendingOperator === null
+  ) {
     const digit = parseInt(key, 10)
     const newCount = state.pendingCount === null ? digit : state.pendingCount * 10 + digit
     return { ...state, pendingCount: newCount }
@@ -437,16 +816,21 @@ export function processKey(state: VimState, key: string): VimState {
   const count = state.pendingCount ?? 1
   const stateWithReset = { ...state, pendingCount: null }
 
-  // G with an explicit count jumps to a specific 1-indexed line.
+  // G with explicit count: jump to 1-indexed line
   if (key === 'G' && state.pendingCount !== null) {
     const targetRow = Math.min(count - 1, state.buffer.length - 1)
     return { ...stateWithReset, cursor: { row: targetRow, col: 0 } }
   }
 
-  // For all other motions: apply the motion `count` times.
+  // When operator is pending, pass directly to processKeyNormal (it handles its own count)
+  if (state.pendingOperator !== null) {
+    return processKeyNormal(state, key)
+  }
+
+  // Apply motion `count` times
   let result: VimState = stateWithReset
   for (let i = 0; i < count; i++) {
-    result = processKeyOnce(result, key)
+    result = processKeyNormal(result, key)
   }
   return result
 }

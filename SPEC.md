@@ -968,7 +968,9 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ## Phase 5 — Full Curriculum (Operator and Text Object Engine)
 
 ### SPEC-031 — Operator Motions (d c y p .)
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-015
 **Branch:** `feat/SPEC-031-operator-motions`
 
@@ -1369,7 +1371,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-028 | Custom Router | DONE | 4 |
 | SPEC-029 | WorldMapScreen | TODO | 4 |
 | SPEC-030 | HUD + XPBar | REVIEW | 4 |
-| SPEC-031 | Operator Motions | TODO | 5 |
+| SPEC-031 | Operator Motions | REVIEW | 5 |
 | SPEC-032 | Text Object Motions | TODO | 5 |
 | SPEC-033 | Marks + Jump Motions | TODO | 5 |
 | SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |

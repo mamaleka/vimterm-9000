@@ -19,6 +19,7 @@ export interface VimState {
   buffer: string[]
   cursor: Position
   register: string
+  registerType: 'char' | 'line'
   pendingOperator: string | null
   pendingCount: number | null
   pendingMotion: string[]
@@ -30,6 +31,7 @@ export interface VimState {
   lastFindTill: boolean
   searchPattern: string | null
   lastAction: Action | null
+  insertedText: string
   visitedPositions: Position[]
   motionCounts: Record<string, number>
 }

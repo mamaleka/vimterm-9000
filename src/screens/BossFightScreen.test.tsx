@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import { BossFightScreen } from './BossFightScreen'
 import type { ChallengeDefinition } from '../types/challenge'
 
@@ -128,7 +127,7 @@ describe('BossFightScreen', () => {
     act(() => { capturedCallbacks.onStageCleared() })
 
     const continueBtn = screen.getByRole('button', { name: /continue/i })
-    await userEvent.click(continueBtn)
+    act(() => { fireEvent.click(continueBtn) })
     expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
   })
 
@@ -169,7 +168,7 @@ describe('BossFightScreen', () => {
     act(() => { capturedCallbacks.onHeartLost() })
 
     const retreatBtn = screen.getByRole('button', { name: /retreat/i })
-    await userEvent.click(retreatBtn)
+    act(() => { fireEvent.click(retreatBtn) })
     expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
   })
 })

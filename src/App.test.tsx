@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vitest'
 import App from './App'
 import { useStore } from './store'
@@ -76,7 +76,9 @@ describe('navigateTo action', () => {
     expect(screen.getByText('VIMTERM-9000')).toBeInTheDocument()
 
     // After navigating to practice, placeholder shown
-    useStore.setState({ currentScreen: 'practice' })
+    act(() => {
+      useStore.setState({ currentScreen: 'practice' })
+    })
     expect(screen.getByTestId('screen-placeholder-practice')).toBeInTheDocument()
     expect(screen.queryByText('VIMTERM-9000')).not.toBeInTheDocument()
   })

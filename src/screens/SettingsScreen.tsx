@@ -4,6 +4,7 @@ import { useStore } from '../store'
 import type { ThemeSettings, AudioSettings, GameplaySettings, AccessibilitySettings } from '../store/settingsSlice'
 
 type PhosphorColor = ThemeSettings['phosphorColor']
+type FontSize = ThemeSettings['fontSize']
 
 const PHOSPHOR_CYCLE: PhosphorColor[] = ['green', 'amber', 'blue']
 const PHOSPHOR_HEX: Record<PhosphorColor, string> = {
@@ -12,7 +13,12 @@ const PHOSPHOR_HEX: Record<PhosphorColor, string> = {
   blue: '#4d9fff',
   white: '#e0e0e0',
 }
-const FONT_SIZE_CYCLE: ThemeSettings['fontSize'][] = ['sm', 'md', 'lg']
+const FONT_SIZE_CYCLE: FontSize[] = ['sm', 'md', 'lg']
+
+function cycleNext<T>(cycle: T[], current: T): T {
+  const idx = cycle.indexOf(current)
+  return cycle[(idx + 1) % cycle.length]
+}
 
 interface SaveDataImport {
   version: number
@@ -78,17 +84,13 @@ export default function SettingsScreen() {
   const [importError, setImportError] = useState<string | null>(null)
 
   function cyclePhosphorColor() {
-    const currentIndex = PHOSPHOR_CYCLE.indexOf(theme.phosphorColor as PhosphorColor)
-    const nextIndex = (currentIndex + 1) % PHOSPHOR_CYCLE.length
-    const next = PHOSPHOR_CYCLE[nextIndex]
+    const next = cycleNext(PHOSPHOR_CYCLE, theme.phosphorColor)
     document.documentElement.style.setProperty('--color-text', PHOSPHOR_HEX[next])
     updateTheme({ phosphorColor: next })
   }
 
   function cycleFontSize() {
-    const currentIndex = FONT_SIZE_CYCLE.indexOf(theme.fontSize)
-    const nextIndex = (currentIndex + 1) % FONT_SIZE_CYCLE.length
-    updateTheme({ fontSize: FONT_SIZE_CYCLE[nextIndex] })
+    updateTheme({ fontSize: cycleNext(FONT_SIZE_CYCLE, theme.fontSize) })
   }
 
   const exportData = {

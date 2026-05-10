@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"C:\\\\Users\\\\mosima.mamaleka\\\\Desktop\\\\learn\\\\vim-practice\\\\.claude\\\\worktrees\\\\pensive-sammet-43f7eb\" worktree list)",
+      "Bash(ls \"C:\\\\Users\\\\mosima.mamaleka\\\\Desktop\\\\learn\\\\vim-practice-worktrees\\\\SPEC-016\")",
+      "Read(//c/Users/mosima.mamaleka/Desktop/learn/vim-practice/**)",
+      "Read(//c/Users/mosima.mamaleka/Desktop/learn/**)",
+      "Bash(npm test *)"
+    ]
+  }
+}

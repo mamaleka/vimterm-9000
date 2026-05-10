@@ -587,8 +587,9 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ---
 
 ### SPEC-020 — HintPanel and KeyHistoryDisplay Components
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-002
 **Branch:** `feat/SPEC-020-hint-panel`
 
@@ -1339,7 +1340,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-017 | CursorOverlay Component | TODO | 2 |
 | SPEC-018 | LineNumbers + StatusBar | TODO | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
-| SPEC-020 | HintPanel + KeyHistory | IN PROGRESS | 2 |
+| SPEC-020 | HintPanel + KeyHistory | REVIEW | 2 |
 | SPEC-021 | Challenge Validator | REVIEW | 3 |
 | SPEC-022 | Zone 1 Curriculum Data | REVIEW | 3 |
 | SPEC-023 | XP + Level Utils | REVIEW | 3 |

@@ -985,3 +985,449 @@ describe('no regressions — all prior motion tests work after operators added',
     expect(s2.cursor).toEqual(s.cursor)
   })
 })
+
+// ─── SPEC-032: Text Object Motions ────────────────────────────────────────────
+
+describe('diw — delete inner word', () => {
+  it('diw deletes the word under cursor (no surrounding spaces)', () => {
+    const s = createInitialState(['hello world'])
+    // cursor at col 0 (on 'h' of 'hello')
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    // 'hello' deleted, space+world remains
+    expect(s3.buffer[0]).toBe(' world')
+    expect(s3.cursor.col).toBe(0)
+    expect(s3.mode).toBe('normal')
+  })
+
+  it('diw deletes word when cursor is in the middle of the word', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 2 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    // 'hello' deleted from col 0..4
+    expect(s3.buffer[0]).toBe(' world')
+    expect(s3.cursor.col).toBe(0)
+  })
+
+  it('diw when cursor is on a space deletes the space run', () => {
+    const s = createInitialState(['hello   world'])
+    // cursor at col 5 (on first space of '   ')
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 5 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    // spaces deleted: 'hello' + 'world'
+    expect(s3.buffer[0]).toBe('helloworld')
+  })
+
+  it('diw on a single-word line deletes the entire word', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    expect(s3.buffer[0]).toBe('')
+  })
+
+  it('diw stores deleted word in register', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    expect(s3.register).toBe('hello')
+  })
+
+  it('diw stores lastAction for dot-repeat', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    expect(s3.lastAction).not.toBeNull()
+    expect(s3.lastAction?.operator).toBe('d')
+    expect(s3.lastAction?.motion).toBe('iw')
+  })
+})
+
+describe('daw — delete a word (word + surrounding space)', () => {
+  it('daw deletes word and trailing space when space follows', () => {
+    const s = createInitialState(['hello world'])
+    // cursor on 'hello' at col 0
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'w')
+    // 'hello ' deleted, 'world' remains
+    expect(s3.buffer[0]).toBe('world')
+    expect(s3.cursor.col).toBe(0)
+  })
+
+  it('daw deletes word and leading space when word is last on line', () => {
+    const s = createInitialState(['hello world'])
+    // cursor on 'world' at col 6
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 6 } }, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'w')
+    // ' world' deleted (leading space), 'hello' remains
+    expect(s3.buffer[0]).toBe('hello')
+  })
+
+  it('daw on single-word line deletes the word', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'w')
+    expect(s3.buffer[0]).toBe('')
+  })
+
+  it('daw stores lastAction for dot-repeat', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'w')
+    expect(s3.lastAction?.motion).toBe('aw')
+  })
+})
+
+describe('di" — delete inner double quotes', () => {
+  it('di" deletes content between double quotes', () => {
+    const s = createInitialState(['"hello world"'])
+    // cursor at col 1 (inside the quotes)
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('""')
+    expect(s3.cursor.col).toBe(1)
+  })
+
+  it('di" works when cursor is on the opening quote', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('""')
+  })
+
+  it('di" works when cursor is on the closing quote', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 6 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('""')
+  })
+
+  it('di" stores deleted content in register', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.register).toBe('hello')
+  })
+
+  it('di" is a no-op when cursor is outside quotes', () => {
+    const s = createInitialState(['hello "world"'])
+    // cursor at col 0 — outside the quotes
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('hello "world"')
+  })
+
+  it('di" on line with no quotes is a no-op', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('hello world')
+    expect(s3.mode).toBe('normal')
+  })
+
+  it('di" stores lastAction for dot-repeat', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.lastAction?.motion).toBe('i"')
+  })
+})
+
+describe("di' — delete inner single quotes", () => {
+  it("di' deletes content between single quotes", () => {
+    const s = createInitialState(["'hello'"])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, "'")
+    expect(s3.buffer[0]).toBe("''")
+    expect(s3.cursor.col).toBe(1)
+  })
+
+  it("di' stores deleted content in register", () => {
+    const s = createInitialState(["'world'"])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 3 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, "'")
+    expect(s3.register).toBe('world')
+  })
+
+  it("di' is a no-op when cursor is outside quotes", () => {
+    const s = createInitialState(["hello 'world'"])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, "'")
+    expect(s3.buffer[0]).toBe("hello 'world'")
+  })
+})
+
+describe('di( / di) — delete inner parentheses', () => {
+  it('di( deletes content inside parentheses', () => {
+    const s = createInitialState(['foo(bar)'])
+    // cursor inside at col 4 ('b')
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '(')
+    expect(s3.buffer[0]).toBe('foo()')
+    expect(s3.cursor.col).toBe(4)
+  })
+
+  it('di) also deletes content inside parentheses (alias)', () => {
+    const s = createInitialState(['foo(bar)'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, ')')
+    expect(s3.buffer[0]).toBe('foo()')
+  })
+
+  it('di( handles nested parentheses — finds outermost enclosing pair', () => {
+    const s = createInitialState(['foo(bar(baz))'])
+    // cursor at col 8 (inside inner parens, on 'b' of 'baz')
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 8 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '(')
+    // Should delete from innermost enclosing parens: 'baz' → 'foo(bar())'
+    expect(s3.buffer[0]).toBe('foo(bar())')
+  })
+
+  it('di( is a no-op when cursor is outside all parens', () => {
+    const s = createInitialState(['foo(bar)baz'])
+    // cursor at col 9 (on 'a' of 'baz', outside parens)
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 9 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '(')
+    expect(s3.buffer[0]).toBe('foo(bar)baz')
+  })
+
+  it('di( stores deleted content in register', () => {
+    const s = createInitialState(['(hello)'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '(')
+    expect(s3.register).toBe('hello')
+  })
+})
+
+describe('di[ — delete inner brackets', () => {
+  it('di[ deletes content inside square brackets', () => {
+    const s = createInitialState(['arr[0]'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '[')
+    expect(s3.buffer[0]).toBe('arr[]')
+  })
+
+  it('di] also works as alias', () => {
+    const s = createInitialState(['arr[0]'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 4 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, ']')
+    expect(s3.buffer[0]).toBe('arr[]')
+  })
+
+  it('di[ is a no-op outside brackets', () => {
+    const s = createInitialState(['hello[world]'])
+    // cursor before the bracket
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '[')
+    expect(s3.buffer[0]).toBe('hello[world]')
+  })
+})
+
+describe('di{ — delete inner braces', () => {
+  it('di{ deletes content inside curly braces', () => {
+    const s = createInitialState(['{hello}'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '{')
+    expect(s3.buffer[0]).toBe('{}')
+  })
+
+  it('di} also works as alias', () => {
+    const s = createInitialState(['{hello}'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '}')
+    expect(s3.buffer[0]).toBe('{}')
+  })
+
+  it('di{ is a no-op when outside braces', () => {
+    const s = createInitialState(['hello{world}'])
+    // cursor at col 0 — outside braces
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '{')
+    expect(s3.buffer[0]).toBe('hello{world}')
+  })
+
+  it('di{ stores content in register', () => {
+    const s = createInitialState(['{abc}'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 2 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '{')
+    expect(s3.register).toBe('abc')
+  })
+})
+
+describe('dip — delete inner paragraph', () => {
+  it('dip deletes contiguous non-blank lines (inner paragraph)', () => {
+    const s = createInitialState([
+      'line1',
+      'line2',
+      'line3',
+      '',
+      'line4',
+    ])
+    // cursor in the first paragraph
+    const s1 = processKey({ ...s, cursor: { row: 1, col: 0 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'p')
+    // lines 0-2 deleted, blank line and line4 remain
+    expect(s3.buffer).toEqual(['', 'line4'])
+  })
+
+  it('dip on single-line paragraph deletes that line', () => {
+    const s = createInitialState([
+      '',
+      'only',
+      '',
+    ])
+    const s1 = processKey({ ...s, cursor: { row: 1, col: 0 } }, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'p')
+    expect(s3.buffer).toEqual(['', ''])
+  })
+
+  it('dip on first paragraph deletes those lines', () => {
+    const s = createInitialState([
+      'hello',
+      'world',
+      '',
+      'other',
+    ])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'p')
+    expect(s3.buffer).toEqual(['', 'other'])
+  })
+})
+
+describe('dap — delete a paragraph (paragraph + trailing blank lines)', () => {
+  it('dap deletes paragraph and trailing blank lines', () => {
+    const s = createInitialState([
+      'line1',
+      'line2',
+      '',
+      '',
+      'line3',
+    ])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'p')
+    // paragraph lines 0-1 + blank lines 2-3 deleted; only line3 remains
+    expect(s3.buffer).toEqual(['line3'])
+  })
+
+  it('dap when no trailing blank lines also deletes preceding blank lines', () => {
+    const s = createInitialState([
+      '',
+      '',
+      'line1',
+      'line2',
+    ])
+    // cursor on last paragraph (no blank lines after)
+    const s1 = processKey({ ...s, cursor: { row: 2, col: 0 } }, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'p')
+    // lines 2-3 deleted; blank lines remain
+    expect(s3.buffer).toEqual(['', ''])
+  })
+
+  it('dap on single-paragraph buffer with no blank lines empties it', () => {
+    const s = createInitialState(['hello', 'world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'a')
+    const s3 = processKey(s2, 'p')
+    expect(s3.buffer).toEqual([''])
+  })
+})
+
+describe('ci" — change inside double quotes (delete + insert mode)', () => {
+  it('ci" deletes content inside quotes and enters insert mode', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'c')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('""')
+    expect(s3.mode).toBe('insert')
+    expect(s3.cursor.col).toBe(1)
+  })
+
+  it('ci" allows typing replacement text after deletion', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'c')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.mode).toBe('insert')
+    // Type replacement
+    const s4 = processKey(s3, 'b')
+    const s5 = processKey(s4, 'y')
+    const s6 = processKey(s5, 'e')
+    expect(s6.buffer[0]).toBe('"bye"')
+    const s7 = processKey(s6, 'Escape')
+    expect(s7.mode).toBe('normal')
+    expect(s7.buffer[0]).toBe('"bye"')
+  })
+
+  it('ci" stores lastAction so dot-repeat works', () => {
+    const s = createInitialState(['"hello"'])
+    const s1 = processKey({ ...s, cursor: { row: 0, col: 1 } }, 'c')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.lastAction?.operator).toBe('c')
+    expect(s3.lastAction?.motion).toBe('i"')
+  })
+})
+
+describe('text object no-op when cursor is outside text object', () => {
+  it('diw on empty line is a no-op', () => {
+    const s = createInitialState([''])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'w')
+    expect(s3.buffer[0]).toBe('')
+    expect(s3.mode).toBe('normal')
+  })
+
+  it('di( outside parens leaves buffer unchanged', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '(')
+    expect(s3.buffer[0]).toBe('hello world')
+  })
+
+  it('di" outside quotes leaves buffer unchanged', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, '"')
+    expect(s3.buffer[0]).toBe('hello world')
+  })
+})

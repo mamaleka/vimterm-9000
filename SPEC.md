@@ -1028,7 +1028,9 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-032 — Text Object Motions (iw aw i" i' i( i[ i{ ip ap)
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-031
 **Branch:** `feat/SPEC-032-text-objects`
 
@@ -1402,7 +1404,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-029 | WorldMapScreen | DONE | 4 |
 | SPEC-030 | HUD + XPBar | DONE | 4 |
 | SPEC-031 | Operator Motions | DONE | 5 |
-| SPEC-032 | Text Object Motions | TODO | 5 |
+| SPEC-032 | Text Object Motions | REVIEW | 5 |
 | SPEC-033 | Marks + Jump Motions | TODO | 5 |
 | SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |
 | SPEC-035 | DeleteEnemies + Transform | TODO | 5 |

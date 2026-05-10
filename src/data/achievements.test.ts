@@ -35,8 +35,10 @@ function makeProgress(overrides: Partial<ProgressState> = {}): ProgressState {
 }
 
 describe('achievements definitions', () => {
-  it('exports an array of 12 achievements', () => {
-    expect(achievements).toHaveLength(12)
+  it('exports an array of 13 achievements', () => {
+    // PLAN.md lists 13 achievements across 4 categories (4+4+2+3).
+    // SPEC-037 says "12 achievements" but the plan has 13; we implement all 13.
+    expect(achievements).toHaveLength(13)
   })
 
   it('each achievement has id, name, description, and checkCondition', () => {

@@ -19,13 +19,16 @@ export interface BossDefeat {
   heartsRemaining: number
 }
 
-export interface ProgressSlice {
+export interface ProgressState {
   unlockedZones: string[]
   completedLessons: Record<string, LessonResult>
   completedChallenges: Record<string, ChallengeResult>
   bossDefeats: Record<string, BossDefeat>
   currentZone: string
   currentLesson: string | null
+}
+
+export interface ProgressSlice extends ProgressState {
   unlockZone: (zoneId: string) => void
   completeChallenge: (id: string, result: ChallengeResult) => void
   completeLesson: (id: string, result: LessonResult) => void

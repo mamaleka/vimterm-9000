@@ -830,7 +830,10 @@ Calls `onArrowKeyPress()` when arrow key detected.
 ---
 
 ### SPEC-026 — PracticeScreen
-**Status:** `TODO`
+**Status:** `DONE`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-025, SPEC-023, SPEC-024, SPEC-004
 **Branch:** `feat/SPEC-026-practice-screen`
 
@@ -1312,7 +1315,10 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ---
 
 ### SPEC-041 — BossFightScreen
-**Status:** `REVIEW`
+**Status:** `DONE`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-028, SPEC-040, SPEC-025, SPEC-035
 **Branch:** `feat/SPEC-041-boss-fight-screen`
 
@@ -1426,7 +1432,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-023 | XP + Level Utils | DONE | 3 |
 | SPEC-024 | Streak Utils | DONE | 3 |
 | SPEC-025 | ReachTarget Challenge | REVIEW | 3 |
-| SPEC-026 | PracticeScreen | TODO | 3 |
+| SPEC-026 | PracticeScreen | DONE | 3 |
 | SPEC-027 | ChallengeCompleteScreen | DONE | 3 |
 | SPEC-028 | Custom Router | DONE | 4 |
 | SPEC-029 | WorldMapScreen | DONE | 4 |
@@ -1441,6 +1447,6 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-038 | SkillTreeScreen | DONE | 6 |
 | SPEC-039 | ProfileScreen | TODO | 6 |
 | SPEC-040 | Boss Data | DONE | 7 |
-| SPEC-041 | BossFightScreen | REVIEW | 7 |
+| SPEC-041 | BossFightScreen | DONE | 7 |
 | SPEC-042 | SettingsScreen | DONE | 8 |
 | SPEC-043 | LessonScreen | DONE | 8 |

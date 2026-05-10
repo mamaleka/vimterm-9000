@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import { VimEditor } from './VimEditor'
 
 const BUFFER = ['hello world', 'foo bar baz']
@@ -65,52 +64,57 @@ describe('VimEditor', () => {
     expect(cell?.getAttribute('data-enemy')).toBe('true')
   })
 
-  it('pressing l key moves cursor right and status bar updates position', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+  it('pressing l key moves cursor right and status bar updates position', () => {
     render(<VimEditor initialBuffer={BUFFER} />)
 
     expect(screen.getByText('1:1')).toBeTruthy()
 
-    await user.keyboard('l')
+    act(() => {
+      fireEvent.keyDown(document, { key: 'l' })
+    })
 
     expect(screen.getByText('1:2')).toBeTruthy()
   })
 
-  it('pressing j key moves cursor down', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+  it('pressing j key moves cursor down', () => {
     render(<VimEditor initialBuffer={BUFFER} />)
 
-    await user.keyboard('j')
+    act(() => {
+      fireEvent.keyDown(document, { key: 'j' })
+    })
 
     expect(screen.getByText('2:1')).toBeTruthy()
   })
 
-  it('arrow key press triggers onArrowKey callback', async () => {
+  it('arrow key press triggers onArrowKey callback', () => {
     const onArrowKey = vi.fn()
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<VimEditor initialBuffer={BUFFER} onArrowKey={onArrowKey} />)
 
-    await user.keyboard('{ArrowRight}')
+    act(() => {
+      fireEvent.keyDown(document, { key: 'ArrowRight' })
+    })
 
     expect(onArrowKey).toHaveBeenCalledTimes(1)
   })
 
-  it('arrow key does not trigger multiple onArrowKey calls for a single press', async () => {
+  it('arrow key does not trigger multiple onArrowKey calls for a single press', () => {
     const onArrowKey = vi.fn()
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<VimEditor initialBuffer={BUFFER} onArrowKey={onArrowKey} />)
 
-    await user.keyboard('{ArrowUp}')
+    act(() => {
+      fireEvent.keyDown(document, { key: 'ArrowUp' })
+    })
 
     expect(onArrowKey).toHaveBeenCalledTimes(1)
   })
 
-  it('onStateChange callback is called when state changes', async () => {
+  it('onStateChange callback is called when state changes', () => {
     const onStateChange = vi.fn()
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<VimEditor initialBuffer={BUFFER} onStateChange={onStateChange} />)
 
-    await user.keyboard('l')
+    act(() => {
+      fireEvent.keyDown(document, { key: 'l' })
+    })
 
     expect(onStateChange).toHaveBeenCalled()
     const lastCallArg = onStateChange.mock.calls[onStateChange.mock.calls.length - 1][0]

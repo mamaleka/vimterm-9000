@@ -1251,8 +1251,9 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ## Phase 7 — Boss Fights
 
 ### SPEC-040 — Boss Data
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-040-boss-data`
 

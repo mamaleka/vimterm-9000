@@ -1,5 +1,9 @@
 import { TerminalWindow } from '../components/ui/TerminalWindow'
 import { useStore } from '../store'
+import { zone1, zone2, zone3, zone4, zone5 } from '../data/curriculum'
+import type { Zone } from '../types/curriculum'
+
+const ALL_ZONES: Zone[] = [zone1, zone2, zone3, zone4, zone5]
 
 interface ZoneDefinition {
   id: string
@@ -81,6 +85,8 @@ const ZONES: ZoneDefinition[] = [
 export function WorldMapScreen() {
   const unlockedZones = useStore((s) => s.unlockedZones)
   const navigateTo = useStore((s) => s.navigateTo)
+  const completedLessons = useStore((s) => s.completedLessons)
+  const setCurrentLesson = useStore((s) => s.setCurrentLesson)
 
   return (
     <TerminalWindow>
@@ -100,6 +106,13 @@ export function WorldMapScreen() {
                 disabled={!isUnlocked}
                 onClick={() => {
                   if (isUnlocked) {
+                    const zoneData = ALL_ZONES.find((z) => z.id === zone.id)
+                    if (zoneData) {
+                      const firstIncomplete =
+                        zoneData.lessons.find((lesson) => !(lesson.id in completedLessons)) ??
+                        zoneData.lessons[0]
+                      setCurrentLesson(firstIncomplete.id)
+                    }
                     navigateTo('lesson')
                   }
                 }}

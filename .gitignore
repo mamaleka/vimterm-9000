@@ -3,6 +3,8 @@ dist/
 .env
 .env.local
 *.local
+.claude/settings.local.json
+.claude/worktrees/
 .DS_Store
 Thumbs.db
 coverage/

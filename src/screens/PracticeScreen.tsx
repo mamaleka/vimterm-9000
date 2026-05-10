@@ -97,8 +97,15 @@ export function PracticeScreen() {
 
   if (!challenge) {
     return (
-      <div className="flex items-center justify-center h-screen text-crt-dim font-mono">
-        No challenge selected
+      <div className="flex flex-col items-center justify-center h-screen gap-6 text-crt-dim font-mono">
+        <div>No challenge active</div>
+        <button
+          data-testid="go-to-world-map"
+          onClick={() => navigateTo('worldMap')}
+          className="border border-crt-border text-crt-text px-6 py-2 font-mono hover:text-crt-bright hover:border-crt-text transition-colors"
+        >
+          GO TO WORLD MAP
+        </button>
       </div>
     )
   }

@@ -1155,9 +1155,10 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-036 — SpeedRun Challenge Component
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-025
 **Branch:** `feat/SPEC-036-speed-run`
 
@@ -1432,7 +1433,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-033 | Marks + Jump Motions | DONE | 5 |
 | SPEC-034 | Zones 2–5 Curriculum | DONE | 5 |
 | SPEC-035 | DeleteEnemies + Transform | DONE | 5 |
-| SPEC-036 | SpeedRun Challenge | REVIEW | 5 |
+| SPEC-036 | SpeedRun Challenge | DONE | 5 |
 | SPEC-037 | Achievements | DONE | 6 |
 | SPEC-038 | SkillTreeScreen | TODO | 6 |
 | SPEC-039 | ProfileScreen | TODO | 6 |

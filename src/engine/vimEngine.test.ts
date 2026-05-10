@@ -631,3 +631,355 @@ describe('N — repeat search backward', () => {
     expect(s6.cursor.col).toBe(8)
   })
 })
+
+// --- SPEC-031 operator motion tests ---
+
+describe('d operator — delete', () => {
+  describe('dw — delete to end of word', () => {
+    it('dw deletes from cursor to start of next word', () => {
+      const s = createInitialState(['hello world'])
+      // Press 'd' then 'w' — deletes 'hello ' leaving 'world'
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'w')
+      expect(s2.buffer[0]).toBe('world')
+      expect(s2.cursor).toEqual({ row: 0, col: 0 })
+    })
+
+    it('dw in middle of word deletes remainder of word and space', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey({ ...s, cursor: { row: 0, col: 2 } }, 'd')
+      const s2 = processKey(s1, 'w')
+      // From col 2 ('l') to start of 'world' (col 6): delete 'llo '
+      expect(s2.buffer[0]).toBe('hewworld')
+    })
+
+    it('dw at last word on last line deletes to end of line', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey({ ...s, cursor: { row: 0, col: 6 } }, 'd')
+      const s2 = processKey(s1, 'w')
+      // Deletes 'world' leaving 'hello '
+      expect(s2.buffer[0]).toBe('hello ')
+    })
+
+    it('dw does not move to insert mode', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'w')
+      expect(s2.mode).toBe('normal')
+    })
+  })
+
+  describe('dd — delete entire line', () => {
+    it('dd deletes the current line from a multi-line buffer', () => {
+      const s = createInitialState(['line1', 'line2', 'line3'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'd')
+      expect(s2.buffer).toEqual(['line2', 'line3'])
+      expect(s2.cursor.row).toBe(0)
+    })
+
+    it('dd on last line makes the line empty (or removes it if not the only line)', () => {
+      const s = createInitialState(['line1', 'line2'])
+      const s1 = processKey({ ...s, cursor: { row: 1, col: 0 } }, 'd')
+      const s2 = processKey(s1, 'd')
+      // Deleting the last line in a multi-line buffer removes it
+      expect(s2.buffer).toEqual(['line1'])
+      expect(s2.cursor.row).toBe(0)
+    })
+
+    it('dd on only line makes buffer contain one empty line', () => {
+      const s = createInitialState(['hello'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'd')
+      expect(s2.buffer).toEqual([''])
+      expect(s2.cursor).toEqual({ row: 0, col: 0 })
+    })
+
+    it('dd yanks deleted line into register', () => {
+      const s = createInitialState(['line1', 'line2'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'd')
+      expect(s2.register).toBe('line1')
+    })
+
+    it('dd stays in normal mode', () => {
+      const s = createInitialState(['hello', 'world'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, 'd')
+      expect(s2.mode).toBe('normal')
+    })
+  })
+
+  describe('d$ — delete to end of line', () => {
+    it('d$ deletes from cursor to end of line', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey({ ...s, cursor: { row: 0, col: 5 } }, 'd')
+      const s2 = processKey(s1, '$')
+      expect(s2.buffer[0]).toBe('hello')
+      expect(s2.cursor).toEqual({ row: 0, col: 4 })
+    })
+
+    it('d$ from col 0 deletes entire line content, leaving empty string', () => {
+      const s = createInitialState(['hello'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, '$')
+      expect(s2.buffer[0]).toBe('')
+    })
+  })
+
+  describe('d3w — delete with count', () => {
+    it('d3w deletes 3 words', () => {
+      const s = createInitialState(['one two three four'])
+      const s1 = processKey(s, 'd')
+      const s2 = processKey(s1, '3')
+      const s3 = processKey(s2, 'w')
+      // Delete 'one two three ' leaving 'four'
+      expect(s3.buffer[0]).toBe('four')
+    })
+  })
+})
+
+describe('c operator — change', () => {
+  describe('cw — change word', () => {
+    it('cw deletes word and enters insert mode', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey(s, 'c')
+      const s2 = processKey(s1, 'w')
+      // Should delete 'hello ' and enter insert mode
+      expect(s2.buffer[0]).toBe('world')
+      expect(s2.mode).toBe('insert')
+    })
+
+    it('cw cursor is at the start of what was deleted', () => {
+      const s = createInitialState(['hello world'])
+      const s1 = processKey(s, 'c')
+      const s2 = processKey(s1, 'w')
+      expect(s2.cursor).toEqual({ row: 0, col: 0 })
+    })
+  })
+})
+
+describe('y operator — yank', () => {
+  describe('yy — yank line', () => {
+    it('yy yanks current line into register', () => {
+      const s = createInitialState(['hello', 'world'])
+      const s1 = processKey(s, 'y')
+      const s2 = processKey(s1, 'y')
+      expect(s2.register).toBe('hello')
+    })
+
+    it('yy does not change the buffer', () => {
+      const s = createInitialState(['hello', 'world'])
+      const s1 = processKey(s, 'y')
+      const s2 = processKey(s1, 'y')
+      expect(s2.buffer).toEqual(['hello', 'world'])
+    })
+
+    it('yy does not change the cursor', () => {
+      const s = createInitialState(['hello', 'world'])
+      const positioned = { ...s, cursor: { row: 1, col: 2 } }
+      const s1 = processKey(positioned, 'y')
+      const s2 = processKey(s1, 'y')
+      expect(s2.cursor).toEqual({ row: 1, col: 2 })
+    })
+
+    it('yy stays in normal mode', () => {
+      const s = createInitialState(['hello'])
+      const s1 = processKey(s, 'y')
+      const s2 = processKey(s1, 'y')
+      expect(s2.mode).toBe('normal')
+    })
+  })
+})
+
+describe('p — paste after cursor', () => {
+  it('p pastes register content after cursor (charwise)', () => {
+    const s = createInitialState(['hello world'])
+    // Yank then paste
+    const withRegister = { ...s, register: 'XYZ', registerType: 'char' as const }
+    const s1 = processKey(withRegister, 'p')
+    // Pastes 'XYZ' after cursor (col 0), result: 'hXYZello world'
+    expect(s1.buffer[0]).toBe('hXYZello world')
+    expect(s1.cursor.col).toBe(3) // cursor on last char of pasted text
+  })
+
+  it('p with linewise register pastes line below current line', () => {
+    const s = createInitialState(['hello', 'world'])
+    const withRegister = { ...s, register: 'inserted', registerType: 'line' as const }
+    const s1 = processKey(withRegister, 'p')
+    expect(s1.buffer).toEqual(['hello', 'inserted', 'world'])
+    expect(s1.cursor.row).toBe(1)
+  })
+
+  it('p pastes after doing dd (linewise)', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    // dd deletes line1, stores in register linewise
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'd')
+    // Now paste it back below current line (line2)
+    const s3 = processKey(s2, 'p')
+    expect(s3.buffer).toEqual(['line2', 'line1', 'line3'])
+  })
+})
+
+describe('P — paste before cursor', () => {
+  it('P pastes register content before cursor (charwise)', () => {
+    const s = createInitialState(['hello'])
+    const withRegister = { ...s, cursor: { row: 0, col: 2 }, register: 'XYZ', registerType: 'char' as const }
+    const s1 = processKey(withRegister, 'P')
+    // Pastes 'XYZ' before col 2 ('l'), result: 'heXYZllo'
+    expect(s1.buffer[0]).toBe('heXYZllo')
+    expect(s1.cursor.col).toBe(4) // cursor on last char of pasted text
+  })
+
+  it('P with linewise register pastes line above current line', () => {
+    const s = createInitialState(['hello', 'world'])
+    const withRegister = { ...s, cursor: { row: 1, col: 0 }, register: 'inserted', registerType: 'line' as const }
+    const s1 = processKey(withRegister, 'P')
+    expect(s1.buffer).toEqual(['hello', 'inserted', 'world'])
+    expect(s1.cursor.row).toBe(1)
+  })
+})
+
+describe('. — dot repeat', () => {
+  it('. repeats last delete operation (dw)', () => {
+    const s = createInitialState(['one two three'])
+    // Do dw once
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'w')
+    // Now buffer is 'two three', cursor at 0
+    expect(s2.buffer[0]).toBe('two three')
+    // Dot repeat: another dw
+    const s3 = processKey(s2, '.')
+    expect(s3.buffer[0]).toBe('three')
+  })
+
+  it('. repeats last dd operation', () => {
+    const s = createInitialState(['line1', 'line2', 'line3'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'd')
+    expect(s2.buffer).toEqual(['line2', 'line3'])
+    const s3 = processKey(s2, '.')
+    expect(s3.buffer).toEqual(['line3'])
+  })
+
+  it('. stores lastAction after dw', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, 'd')
+    const s2 = processKey(s1, 'w')
+    expect(s2.lastAction).not.toBeNull()
+    expect(s2.lastAction?.operator).toBe('d')
+    expect(s2.lastAction?.motion).toBe('w')
+  })
+
+  it('. does nothing when lastAction is null', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey(s, '.')
+    expect(s2.cursor).toEqual(s.cursor)
+    expect(s2.buffer).toEqual(s.buffer)
+  })
+
+  it('. repeats cw + typed text after Escape', () => {
+    const s = createInitialState(['hello world', 'hello world'])
+    // cw
+    const s1 = processKey(s, 'c')
+    const s2 = processKey(s1, 'w')
+    expect(s2.mode).toBe('insert')
+    // Type 'bye'
+    const s3 = processKey(s2, 'b')
+    const s4 = processKey(s3, 'y')
+    const s5 = processKey(s4, 'e')
+    // Escape
+    const s6 = processKey(s5, 'Escape')
+    expect(s6.mode).toBe('normal')
+    expect(s6.buffer[0]).toBe('bye world')
+    // Move to next line and dot-repeat
+    const s7 = processKey(s6, 'j')
+    const s8 = processKey(s7, '.')
+    expect(s8.buffer[1]).toBe('bye world')
+    expect(s8.mode).toBe('normal')
+  })
+})
+
+describe('insert mode', () => {
+  it('entering insert mode via cw allows typing characters', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'c')
+    const s2 = processKey(s1, 'w')
+    expect(s2.mode).toBe('insert')
+    const s3 = processKey(s2, 'x')
+    expect(s3.buffer[0]).toBe('x')
+    expect(s3.cursor.col).toBe(1)
+  })
+
+  it('characters are inserted at cursor in insert mode', () => {
+    const s = createInitialState(['world'])
+    // Enter insert mode with cw (deletes 'world', enters insert)
+    const s1 = processKey(s, 'c')
+    const s2 = processKey(s1, 'w')
+    // Type 'hi'
+    const s3 = processKey(s2, 'h')
+    const s4 = processKey(s3, 'i')
+    expect(s4.buffer[0]).toBe('hi')
+    expect(s4.cursor.col).toBe(2)
+  })
+
+  it('Escape in insert mode returns to normal mode', () => {
+    const s = createInitialState(['hello'])
+    const s1 = processKey(s, 'c')
+    const s2 = processKey(s1, 'w')
+    expect(s2.mode).toBe('insert')
+    const s3 = processKey(s2, 'Escape')
+    expect(s3.mode).toBe('normal')
+  })
+
+  it('Escape in insert mode positions cursor correctly (not past end of line)', () => {
+    const s = createInitialState([''])
+    const inInsert = { ...s, mode: 'insert' as const }
+    const s1 = processKey(inInsert, 'a')
+    const s2 = processKey(s1, 'b')
+    const s3 = processKey(s2, 'c')
+    const s4 = processKey(s3, 'Escape')
+    expect(s4.mode).toBe('normal')
+    // In normal mode, cursor can be on last char but not past it
+    expect(s4.cursor.col).toBeLessThanOrEqual(s4.buffer[0]!.length - 1)
+  })
+
+  it('Backspace in insert mode deletes previous character', () => {
+    const s = createInitialState([''])
+    const inInsert = { ...s, mode: 'insert' as const }
+    const s1 = processKey(inInsert, 'h')
+    const s2 = processKey(s1, 'i')
+    const s3 = processKey(s2, 'Backspace')
+    expect(s3.buffer[0]).toBe('h')
+    expect(s3.cursor.col).toBe(1)
+  })
+})
+
+describe('no regressions — all prior motion tests work after operators added', () => {
+  it('h still moves left', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey({ ...s, cursor: { row: 0, col: 3 } }, 'h')
+    expect(s2.cursor.col).toBe(2)
+  })
+
+  it('w still moves to next word', () => {
+    const s = createInitialState(['hello world'])
+    const s2 = processKey(s, 'w')
+    expect(s2.cursor.col).toBe(6)
+  })
+
+  it('count modifier still works with motions', () => {
+    const s = createInitialState(['hello world'])
+    const s1 = processKey(s, '3')
+    const s2 = processKey(s1, 'l')
+    expect(s2.cursor.col).toBe(3)
+  })
+
+  it('d in normal mode starts operator pending (does not move)', () => {
+    const s = createInitialState(['hello'])
+    const s2 = processKey(s, 'd')
+    expect(s2.pendingOperator).toBe('d')
+    expect(s2.cursor).toEqual(s.cursor)
+  })
+})

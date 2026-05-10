@@ -933,7 +933,9 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-030 — HUD Component (XP Bar + Streak Badge)
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-023, SPEC-024, SPEC-004
 **Branch:** `feat/SPEC-030-hud`
 
@@ -1364,7 +1366,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-027 | ChallengeCompleteScreen | REVIEW | 3 |
 | SPEC-028 | Custom Router | DONE | 4 |
 | SPEC-029 | WorldMapScreen | TODO | 4 |
-| SPEC-030 | HUD + XPBar | TODO | 4 |
+| SPEC-030 | HUD + XPBar | REVIEW | 4 |
 | SPEC-031 | Operator Motions | TODO | 5 |
 | SPEC-032 | Text Object Motions | TODO | 5 |
 | SPEC-033 | Marks + Jump Motions | TODO | 5 |

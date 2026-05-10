@@ -1,23 +1,29 @@
 import { TerminalWindow } from '../components/ui/TerminalWindow'
 import { useStore } from '../store'
 
+const NAV_BUTTON_CLASSES =
+  'border border-crt-border p-3 text-crt-text font-terminal text-xl hover:bg-crt-border hover:text-crt-bright transition-colors'
+
 export function HomeScreen() {
   const displayName = useStore((s) => s.displayName)
   const xp = useStore((s) => s.xp)
   const level = useStore((s) => s.level)
   const streak = useStore((s) => s.streak)
+  const navigateTo = useStore((s) => s.navigateTo)
 
   return (
     <TerminalWindow>
       <div className="flex flex-col items-center justify-center min-h-screen p-8 gap-8">
-        <pre className="text-crt-bright font-terminal text-2xl leading-tight text-center">
-          {`
+        <div data-testid="logo-container" className="overflow-x-auto">
+          <pre className="text-crt-bright font-terminal text-2xl leading-tight text-center">
+            {`
  __   _____ __  __ _____ _____ ____  __  __      ___  ___   ___   ___
  \\ \\ / /_ _|  \\/  |_   _| ____|  _ \\|  \\/  |    / _ \\|   \\ / _ \\ / _ \\
   \\ V / | || |\\/| | | | |  _| | |_) | |\\/| |   | (_) | |) | | | | | | |
    \\_/ |___|_|  |_| |_| |_____|____/|_|  |_|    \\___/|___/ \\___/ \\___/
           `.trim()}
-        </pre>
+          </pre>
+        </div>
 
         <div className="text-crt-text font-terminal text-4xl tracking-widest">
           VIMTERM-9000
@@ -48,6 +54,21 @@ export function HomeScreen() {
           <div className="text-crt-amber font-terminal text-3xl" data-testid="streak-counter">
             {streak.current}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          <button onClick={() => navigateTo('worldMap')} className={NAV_BUTTON_CLASSES}>
+            WORLD MAP
+          </button>
+          <button onClick={() => navigateTo('skillTree')} className={NAV_BUTTON_CLASSES}>
+            SKILL TREE
+          </button>
+          <button onClick={() => navigateTo('settings')} className={NAV_BUTTON_CLASSES}>
+            SETTINGS
+          </button>
+          <button onClick={() => navigateTo('profile')} className={NAV_BUTTON_CLASSES}>
+            PROFILE
+          </button>
         </div>
       </div>
     </TerminalWindow>

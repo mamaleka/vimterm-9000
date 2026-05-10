@@ -10,6 +10,8 @@ describe('VimState type', () => {
       buffer: ['hello world'],
       cursor: { row: 0, col: 0 },
       register: '',
+      registerType: 'char',
+      insertedText: '',
       pendingOperator: null,
       pendingCount: null,
       pendingMotion: [],

@@ -650,7 +650,8 @@ describe('d operator — delete', () => {
       const s1 = processKey({ ...s, cursor: { row: 0, col: 2 } }, 'd')
       const s2 = processKey(s1, 'w')
       // From col 2 ('l') to start of 'world' (col 6): delete 'llo '
-      expect(s2.buffer[0]).toBe('hewworld')
+      // Result: 'he' + 'world' = 'heworld'
+      expect(s2.buffer[0]).toBe('heworld')
     })
 
     it('dw at last word on last line deletes to end of line', () => {
@@ -745,8 +746,8 @@ describe('c operator — change', () => {
       const s = createInitialState(['hello world'])
       const s1 = processKey(s, 'c')
       const s2 = processKey(s1, 'w')
-      // Should delete 'hello ' and enter insert mode
-      expect(s2.buffer[0]).toBe('world')
+      // cw = ce in Vim: deletes to end of word only, NOT trailing whitespace
+      expect(s2.buffer[0]).toBe(' world')
       expect(s2.mode).toBe('insert')
     })
 
@@ -889,15 +890,16 @@ describe('. — dot repeat', () => {
     const s3 = processKey(s2, 'b')
     const s4 = processKey(s3, 'y')
     const s5 = processKey(s4, 'e')
-    // Escape
+    // Escape — cursor will be at col 2 (last char of 'bye')
     const s6 = processKey(s5, 'Escape')
     expect(s6.mode).toBe('normal')
     expect(s6.buffer[0]).toBe('bye world')
-    // Move to next line and dot-repeat
+    // Move to next line, go to col 0, then dot-repeat
     const s7 = processKey(s6, 'j')
-    const s8 = processKey(s7, '.')
-    expect(s8.buffer[1]).toBe('bye world')
-    expect(s8.mode).toBe('normal')
+    const s8 = processKey(s7, '0')
+    const s9 = processKey(s8, '.')
+    expect(s9.buffer[1]).toBe('bye world')
+    expect(s9.mode).toBe('normal')
   })
 })
 

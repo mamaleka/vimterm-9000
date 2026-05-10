@@ -574,9 +574,10 @@ Uses absolute positioning over the EditorBuffer grid.
 ---
 
 ### SPEC-019 — VimEditor Compose Component
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-016, SPEC-017, SPEC-018, SPEC-015
 **Branch:** `feat/SPEC-019-vim-editor`
 
@@ -1388,7 +1389,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-016 | EditorBuffer Component | DONE | 2 |
 | SPEC-017 | CursorOverlay Component | DONE | 2 |
 | SPEC-018 | LineNumbers + StatusBar | DONE | 2 |
-| SPEC-019 | VimEditor Compose | TODO | 2 |
+| SPEC-019 | VimEditor Compose | DONE | 2 |
 | SPEC-020 | HintPanel + KeyHistory | DONE | 2 |
 | SPEC-021 | Challenge Validator | DONE | 3 |
 | SPEC-022 | Zone 1 Curriculum Data | DONE | 3 |

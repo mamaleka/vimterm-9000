@@ -790,9 +790,10 @@ Lv11+: +1500 per level
 ---
 
 ### SPEC-025 — ReachTarget Challenge Component
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-10
 **Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-019, SPEC-021, SPEC-022
 **Branch:** `feat/SPEC-025-reach-target`
 

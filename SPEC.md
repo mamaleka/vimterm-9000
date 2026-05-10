@@ -831,7 +831,9 @@ navigating to ChallengeCompleteScreen.
 ---
 
 ### SPEC-027 — ChallengeCompleteScreen
-**Status:** `TODO`
+**Status:** `REVIEW`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-023, SPEC-004
 **Branch:** `feat/SPEC-027-challenge-complete-screen`
 
@@ -1359,7 +1361,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-024 | Streak Utils | REVIEW | 3 |
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
-| SPEC-027 | ChallengeCompleteScreen | TODO | 3 |
+| SPEC-027 | ChallengeCompleteScreen | REVIEW | 3 |
 | SPEC-028 | Custom Router | DONE | 4 |
 | SPEC-029 | WorldMapScreen | TODO | 4 |
 | SPEC-030 | HUD + XPBar | TODO | 4 |

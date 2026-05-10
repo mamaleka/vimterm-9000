@@ -19,9 +19,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ## Phase 0 — Project Bootstrap
 
 ### SPEC-001 — Vite + React + TypeScript Scaffold
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** nothing
 **Branch:** `feat/SPEC-001-vite-scaffold`
 
@@ -42,8 +43,9 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-002 — Tailwind CSS + CRT Theme
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-001
 **Branch:** `feat/SPEC-002-tailwind-crt-theme`
 
@@ -65,7 +67,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-003 — TerminalWindow and Scanlines Components
-**Status:** `REVIEW` <!-- IN PROGRESS: 2026-05-09 | REVIEW: 2026-05-09 -->
+**Status:** `DONE`
+**Merged:** 2026-05-09
 **Depends on:** SPEC-002
 **Branch:** `feat/SPEC-003-terminal-window`
 
@@ -90,9 +93,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-004 — Zustand Store Skeleton + localStorage Persist
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-001
 **Branch:** `feat/SPEC-004-zustand-store`
 
@@ -120,9 +124,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-005 — Static HomeScreen
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-003, SPEC-004
 **Branch:** `feat/SPEC-005-home-screen`
 
@@ -151,9 +156,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ## Phase 1 — Vim Engine Core
 
 ### SPEC-006 — Core Vim Types
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-001
 **Branch:** `feat/SPEC-006-vim-types`
 
@@ -197,9 +203,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-007 — HJKL Motions
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-007-hjkl-motions`
 
@@ -226,9 +233,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-008 — Word Motions (w b e)
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-008-word-motions`
 
@@ -254,9 +262,10 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-009 — Line and File Motions (0 ^ $ gg G)
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-009-line-file-motions`
 
@@ -282,7 +291,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-010 — Count Modifiers
-**Status:** `REVIEW`
+**Status:** `DONE`
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007, SPEC-008, SPEC-009
 **Branch:** `feat/SPEC-010-count-modifiers`
 
@@ -309,7 +319,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-011 — Find Motions (f F t T ; ,)
-**Status:** `REVIEW`
+**Status:** `DONE`
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-011-find-motions`
 
@@ -336,7 +347,8 @@ Claim a `TODO` spec, implement it with red-green-refactor TDD, and flag it for r
 ---
 
 ### SPEC-012 — Search Motions (/ ? n N)
-**Status:** `REVIEW`
+**Status:** `DONE`
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007
 **Branch:** `feat/SPEC-012-search-motions`
 
@@ -365,9 +377,10 @@ search resolves the pattern.
 ---
 
 ### SPEC-013 — Motion Parser
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-013-motion-parser`
 
@@ -396,9 +409,10 @@ search resolves the pattern.
 ---
 
 ### SPEC-014 — useKeyCapture Hook
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006, SPEC-002
 **Branch:** `feat/SPEC-014-key-capture-hook`
 
@@ -425,9 +439,10 @@ and calls `onKey(key: string)` callback. Detects arrow key presses and calls
 ---
 
 ### SPEC-015 — useVimEngine Hook
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-011, SPEC-012, SPEC-013, SPEC-014
 **Branch:** `feat/SPEC-015-use-vim-engine-hook`
 
@@ -631,9 +646,10 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ## Phase 3 — Challenge System (Zone 1)
 
 ### SPEC-021 — Challenge Validator
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006, SPEC-007, SPEC-008, SPEC-009
 **Branch:** `feat/SPEC-021-challenge-validator`
 
@@ -657,8 +673,9 @@ into a single `<VimEditor>` component. Wires `useVimEngine` internally.
 ---
 
 ### SPEC-022 — Zone 1 Curriculum Data
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-022-zone1-curriculum`
 
@@ -692,9 +709,10 @@ Zone 1 — Tutorial Bunker
 ---
 
 ### SPEC-023 — XP and Level Utilities
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
 **Completed:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-023-xp-utils`
 
@@ -732,8 +750,9 @@ Lv11+: +1500 per level
 ---
 
 ### SPEC-024 — Streak Utilities
-**Status:** `REVIEW`
+**Status:** `DONE`
 **Started:** 2026-05-09
+**Merged:** 2026-05-09
 **Depends on:** SPEC-006
 **Branch:** `feat/SPEC-024-streak-utils`
 
@@ -1346,30 +1365,30 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 
 | Spec | Title | Status | Phase |
 |------|-------|--------|-------|
-| SPEC-001 | Vite Scaffold | REVIEW | 0 |
-| SPEC-002 | Tailwind CRT Theme | REVIEW | 0 |
-| SPEC-003 | TerminalWindow + Scanlines | REVIEW | 0 |
-| SPEC-004 | Zustand Store Skeleton | REVIEW | 0 |
-| SPEC-005 | Static HomeScreen | REVIEW | 0 |
-| SPEC-006 | Core Vim Types | REVIEW | 1 |
-| SPEC-007 | HJKL Motions | REVIEW | 1 |
-| SPEC-008 | Word Motions | REVIEW | 1 |
-| SPEC-009 | Line/File Motions | REVIEW | 1 |
-| SPEC-010 | Count Modifiers | REVIEW | 1 |
-| SPEC-011 | Find Motions | REVIEW | 1 |
-| SPEC-012 | Search Motions | REVIEW | 1 |
-| SPEC-013 | Motion Parser | REVIEW | 1 |
-| SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
-| SPEC-015 | useVimEngine Hook | REVIEW | 1 |
+| SPEC-001 | Vite Scaffold | DONE | 0 |
+| SPEC-002 | Tailwind CRT Theme | DONE | 0 |
+| SPEC-003 | TerminalWindow + Scanlines | DONE | 0 |
+| SPEC-004 | Zustand Store Skeleton | DONE | 0 |
+| SPEC-005 | Static HomeScreen | DONE | 0 |
+| SPEC-006 | Core Vim Types | DONE | 1 |
+| SPEC-007 | HJKL Motions | DONE | 1 |
+| SPEC-008 | Word Motions | DONE | 1 |
+| SPEC-009 | Line/File Motions | DONE | 1 |
+| SPEC-010 | Count Modifiers | DONE | 1 |
+| SPEC-011 | Find Motions | DONE | 1 |
+| SPEC-012 | Search Motions | DONE | 1 |
+| SPEC-013 | Motion Parser | DONE | 1 |
+| SPEC-014 | useKeyCapture Hook | DONE | 1 |
+| SPEC-015 | useVimEngine Hook | DONE | 1 |
 | SPEC-016 | EditorBuffer Component | DONE | 2 |
 | SPEC-017 | CursorOverlay Component | DONE | 2 |
 | SPEC-018 | LineNumbers + StatusBar | DONE | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
 | SPEC-020 | HintPanel + KeyHistory | DONE | 2 |
-| SPEC-021 | Challenge Validator | REVIEW | 3 |
-| SPEC-022 | Zone 1 Curriculum Data | REVIEW | 3 |
-| SPEC-023 | XP + Level Utils | REVIEW | 3 |
-| SPEC-024 | Streak Utils | REVIEW | 3 |
+| SPEC-021 | Challenge Validator | DONE | 3 |
+| SPEC-022 | Zone 1 Curriculum Data | DONE | 3 |
+| SPEC-023 | XP + Level Utils | DONE | 3 |
+| SPEC-024 | Streak Utils | DONE | 3 |
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
 | SPEC-027 | ChallengeCompleteScreen | DONE | 3 |

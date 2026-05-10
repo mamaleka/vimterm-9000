@@ -495,8 +495,9 @@ Enemy marker cells get `data-enemy="true"`.
 ---
 
 ### SPEC-017 — CursorOverlay Component
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-016
 **Branch:** `feat/SPEC-017-cursor-overlay`
 
@@ -1348,7 +1349,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
 | SPEC-015 | useVimEngine Hook | REVIEW | 1 |
 | SPEC-016 | EditorBuffer Component | DONE | 2 |
-| SPEC-017 | CursorOverlay Component | IN PROGRESS | 2 |
+| SPEC-017 | CursorOverlay Component | REVIEW | 2 |
 | SPEC-018 | LineNumbers + StatusBar | DONE | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
 | SPEC-020 | HintPanel + KeyHistory | DONE | 2 |

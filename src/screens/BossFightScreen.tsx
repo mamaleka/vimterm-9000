@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { TerminalWindow } from '../components/ui/TerminalWindow'
 import { HealthBar } from '../components/ui/HealthBar'
 import { BossStage } from '../components/challenge/BossStage'
@@ -29,19 +29,22 @@ export function BossFightScreen() {
     setCurrentStageIdx((idx) => {
       const nextIdx = idx + 1
       if (nextIdx >= totalStages) {
-        setHearts((h) => {
-          defeatBoss(boss.id, {
-            defeatedAt: new Date().toISOString(),
-            heartsRemaining: h,
-          })
-          return h
-        })
         setGameState('victory')
         return idx
       }
       return nextIdx
     })
-  }, [boss.id, defeatBoss, totalStages])
+  }, [totalStages])
+
+  // Fire defeatBoss exactly once when victory is reached
+  const victoryFiredRef = useRef(false)
+  if (gameState === 'victory' && !victoryFiredRef.current) {
+    victoryFiredRef.current = true
+    defeatBoss(boss.id, {
+      defeatedAt: new Date().toISOString(),
+      heartsRemaining: hearts,
+    })
+  }
 
   const handleHeartLost = useCallback(() => {
     setHearts((h) => {

@@ -929,7 +929,8 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-030 — HUD Component (XP Bar + Streak Badge)
-**Status:** `TODO`
+**Status:** `IN PROGRESS`
+**Started:** 2026-05-10
 **Depends on:** SPEC-023, SPEC-024, SPEC-004
 **Branch:** `feat/SPEC-030-hud`
 

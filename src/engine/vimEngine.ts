@@ -625,6 +625,23 @@ function executeDotRepeat(state: VimState): VimState {
   const motion = lastAction.motion ?? ''
   const count = lastAction.count ?? 1
 
+  // Text object motions: 'iw', 'aw', 'i"', 'a"', 'i(', etc.
+  if (motion.length === 2 && (motion[0] === 'i' || motion[0] === 'a')) {
+    const scope: 'inner' | 'outer' = motion[0] === 'i' ? 'inner' : 'outer'
+    const delimiter = motion[1]!
+
+    if (operator === 'c' && lastAction.text !== undefined) {
+      let newState = executeTextObject(state, 'c', scope, delimiter)
+      for (const ch of lastAction.text) {
+        newState = processInsertMode(newState, ch)
+      }
+      newState = processInsertMode(newState, 'Escape')
+      return { ...newState, lastAction }
+    }
+
+    return executeTextObject(state, operator, scope, delimiter)
+  }
+
   if (operator === 'c' && lastAction.text !== undefined) {
     // Replay: execute operator then type recorded text
     let newState = executeOperator(state, 'c', motion, count)
@@ -637,6 +654,364 @@ function executeDotRepeat(state: VimState): VimState {
   }
 
   return executeOperator(state, operator, motion, count)
+}
+
+// ─── Text Object helpers ──────────────────────────────────────────────────────
+
+/**
+ * Range returned by text object finders.
+ * All positions are on the same row (charwise) for quote/bracket objects.
+ * For paragraph objects, startRow..endRow covers the affected lines.
+ */
+interface TextObjectRange {
+  startRow: number
+  startCol: number
+  endRow: number
+  endCol: number
+}
+
+/**
+ * Find inner/outer word boundaries at cursor position.
+ * "inner" (iw): the contiguous run of same-type chars under cursor.
+ * "outer" (aw): inner word + one adjacent space (trailing preferred).
+ */
+function findWordTextObject(
+  buffer: string[],
+  cursor: { row: number; col: number },
+  scope: 'inner' | 'outer',
+): TextObjectRange | null {
+  const line = buffer[cursor.row] ?? ''
+  if (line.length === 0) return null
+
+  const col = cursor.col
+  const ch = line[col]
+  if (ch === undefined) return null
+
+  const curType = tokenType(ch)
+
+  // Find start of the run
+  let start = col
+  while (start > 0 && tokenType(line[start - 1]!) === curType) {
+    start--
+  }
+
+  // Find end of the run (exclusive)
+  let end = col
+  while (end < line.length && tokenType(line[end]!) === curType) {
+    end++
+  }
+
+  if (scope === 'inner') {
+    return { startRow: cursor.row, startCol: start, endRow: cursor.row, endCol: end }
+  }
+
+  // outer: add one adjacent space
+  // Prefer trailing space
+  if (end < line.length && isSpace(line[end]!)) {
+    return { startRow: cursor.row, startCol: start, endRow: cursor.row, endCol: end + 1 }
+  }
+  // No trailing space: consume one leading space
+  if (start > 0 && isSpace(line[start - 1]!)) {
+    return { startRow: cursor.row, startCol: start - 1, endRow: cursor.row, endCol: end }
+  }
+
+  // No adjacent spaces at all
+  return { startRow: cursor.row, startCol: start, endRow: cursor.row, endCol: end }
+}
+
+/**
+ * Find inner range for a matching pair (quotes or brackets).
+ * For brackets: walks outward from cursor to find the innermost enclosing pair.
+ * For quotes: scans left then right on the current line.
+ * Returns the range of content BETWEEN the delimiters (exclusive of the delimiters).
+ */
+function findPairTextObject(
+  buffer: string[],
+  cursor: { row: number; col: number },
+  open: string,
+  close: string,
+): TextObjectRange | null {
+  const line = buffer[cursor.row] ?? ''
+  const col = cursor.col
+
+  if (open === close) {
+    // Quote handling: scan the current line
+    return findQuoteTextObject(line, col, open)
+  }
+
+  // Bracket handling: find innermost enclosing pair by walking left to find '('
+  // then right to find matching ')'
+  let depth = 0
+  let openCol = -1
+
+  // Walk left from cursor (inclusive) to find the opening bracket
+  for (let c = col; c >= 0; c--) {
+    const ch = line[c]!
+    if (ch === close) {
+      depth++
+    } else if (ch === open) {
+      if (depth === 0) {
+        openCol = c
+        break
+      }
+      depth--
+    }
+  }
+
+  if (openCol === -1) return null
+
+  // Walk right from openCol+1 to find matching close
+  depth = 0
+  let closeCol = -1
+  for (let c = openCol + 1; c < line.length; c++) {
+    const ch = line[c]!
+    if (ch === open) {
+      depth++
+    } else if (ch === close) {
+      if (depth === 0) {
+        closeCol = c
+        break
+      }
+      depth--
+    }
+  }
+
+  if (closeCol === -1) return null
+
+  // Verify cursor is inside (openCol < cursor.col < closeCol)
+  // OR cursor is on the open/close bracket itself
+  if (col < openCol || col > closeCol) return null
+
+  return {
+    startRow: cursor.row,
+    startCol: openCol + 1,
+    endRow: cursor.row,
+    endCol: closeCol,
+  }
+}
+
+/**
+ * Find inner range for quote text objects on a single line.
+ * Scans left from cursor to find the nearest quote, then right for the matching one.
+ * If cursor is outside any pair, returns null.
+ */
+function findQuoteTextObject(
+  line: string,
+  col: number,
+  quote: string,
+): TextObjectRange | null {
+  // Find all quote positions on the line
+  const positions: number[] = []
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === quote) positions.push(i)
+  }
+
+  // Need at least 2 quotes to form a pair
+  if (positions.length < 2) return null
+
+  // Build pairs: [positions[0],positions[1]], [positions[2],positions[3]], ...
+  for (let i = 0; i + 1 < positions.length; i += 2) {
+    const openQ = positions[i]!
+    const closeQ = positions[i + 1]!
+    // Cursor must be inside or on the quotes
+    if (col >= openQ && col <= closeQ) {
+      return {
+        startRow: 0, // will be replaced with actual row by caller
+        startCol: openQ + 1,
+        endRow: 0,
+        endCol: closeQ,
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Find the paragraph boundaries at the cursor row.
+ * A paragraph is a maximal run of non-blank lines.
+ * Blank = empty or only whitespace.
+ */
+function isBlankLine(line: string): boolean {
+  return line.trim() === ''
+}
+
+function findParagraphBounds(
+  buffer: string[],
+  cursorRow: number,
+): { paraStart: number; paraEnd: number } {
+  // If cursor is on a blank line, treat it as a one-line "paragraph"
+  if (isBlankLine(buffer[cursorRow] ?? '')) {
+    return { paraStart: cursorRow, paraEnd: cursorRow }
+  }
+
+  let paraStart = cursorRow
+  while (paraStart > 0 && !isBlankLine(buffer[paraStart - 1] ?? '')) {
+    paraStart--
+  }
+
+  let paraEnd = cursorRow
+  while (paraEnd < buffer.length - 1 && !isBlankLine(buffer[paraEnd + 1] ?? '')) {
+    paraEnd++
+  }
+
+  return { paraStart, paraEnd }
+}
+
+/**
+ * Execute a text object operation: operator + scope ('inner'|'outer') + delimiter.
+ * Returns the new state after applying the operator.
+ */
+function executeTextObject(
+  state: VimState,
+  operator: 'd' | 'c' | 'y',
+  scope: 'inner' | 'outer',
+  delimiter: string,
+): VimState {
+  const { buffer, cursor } = state
+  const motionName = (scope === 'inner' ? 'i' : 'a') + delimiter
+  const clearPending = { pendingOperator: null as null, pendingCount: null as null, pendingMotion: [] as string[] }
+
+  // ── Paragraph text objects (ip / ap) ─────────────────────────────────────
+  if (delimiter === 'p') {
+    const { paraStart, paraEnd } = findParagraphBounds(buffer, cursor.row)
+
+    if (scope === 'inner') {
+      // dip: delete all lines from paraStart to paraEnd inclusive
+      const newBuffer = [...buffer]
+      const deleted = newBuffer.splice(paraStart, paraEnd - paraStart + 1)
+      // If buffer is now empty, insert one empty line
+      const finalBuffer = newBuffer.length === 0 ? [''] : newBuffer
+      const newRow = Math.min(paraStart, finalBuffer.length - 1)
+      return {
+        ...state,
+        ...clearPending,
+        buffer: finalBuffer,
+        cursor: { row: newRow, col: 0 },
+        register: deleted.join('\n'),
+        registerType: 'line',
+        mode: operator === 'c' ? 'insert' : 'normal',
+        insertedText: operator === 'c' ? '' : state.insertedText,
+        lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+      }
+    } else {
+      // dap: delete paragraph + trailing blank lines (or leading if no trailing)
+      let delStart = paraStart
+      let delEnd = paraEnd
+
+      // Consume trailing blank lines (preferred)
+      while (delEnd + 1 < buffer.length && isBlankLine(buffer[delEnd + 1] ?? '')) {
+        delEnd++
+      }
+
+      const newBuffer = [...buffer]
+      const deleted = newBuffer.splice(delStart, delEnd - delStart + 1)
+      const finalBuffer = newBuffer.length === 0 ? [''] : newBuffer
+      const newRow = Math.min(delStart, finalBuffer.length - 1)
+      return {
+        ...state,
+        ...clearPending,
+        buffer: finalBuffer,
+        cursor: { row: newRow, col: 0 },
+        register: deleted.join('\n'),
+        registerType: 'line',
+        mode: operator === 'c' ? 'insert' : 'normal',
+        insertedText: operator === 'c' ? '' : state.insertedText,
+        lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+      }
+    }
+  }
+
+  // ── Word text objects (iw / aw) ───────────────────────────────────────────
+  if (delimiter === 'w') {
+    const range = findWordTextObject(buffer, cursor, scope)
+    if (range === null) {
+      return { ...state, ...clearPending }
+    }
+
+    const line = buffer[range.startRow] ?? ''
+    const deletedText = line.slice(range.startCol, range.endCol)
+    const newLine = line.slice(0, range.startCol) + line.slice(range.endCol)
+    const newBuffer = [...buffer]
+    newBuffer[range.startRow] = newLine
+    const newCol = range.startCol
+
+    if (operator === 'y') {
+      return {
+        ...state,
+        ...clearPending,
+        register: deletedText,
+        registerType: 'char',
+        lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+      }
+    }
+
+    return {
+      ...state,
+      ...clearPending,
+      buffer: newBuffer,
+      cursor: { row: range.startRow, col: Math.max(0, newCol) },
+      register: deletedText,
+      registerType: 'char',
+      mode: operator === 'c' ? 'insert' : 'normal',
+      insertedText: operator === 'c' ? '' : state.insertedText,
+      lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+    }
+  }
+
+  // ── Quote and bracket text objects ────────────────────────────────────────
+  const pairMap: Record<string, { open: string; close: string }> = {
+    '"': { open: '"', close: '"' },
+    "'": { open: "'", close: "'" },
+    '(': { open: '(', close: ')' },
+    ')': { open: '(', close: ')' },
+    '[': { open: '[', close: ']' },
+    ']': { open: '[', close: ']' },
+    '{': { open: '{', close: '}' },
+    '}': { open: '{', close: '}' },
+  }
+
+  const pair = pairMap[delimiter]
+  if (!pair) {
+    return { ...state, ...clearPending }
+  }
+
+  let range = findPairTextObject(buffer, cursor, pair.open, pair.close)
+  if (range === null) {
+    return { ...state, ...clearPending }
+  }
+
+  // Fix row for quote text objects (findQuoteTextObject returns row 0)
+  range = { ...range, startRow: cursor.row, endRow: cursor.row }
+
+  const line = buffer[range.startRow] ?? ''
+  const deletedText = line.slice(range.startCol, range.endCol)
+  const newLine = line.slice(0, range.startCol) + line.slice(range.endCol)
+  const newBuffer = [...buffer]
+  newBuffer[range.startRow] = newLine
+  const newCursorCol = range.startCol
+
+  if (operator === 'y') {
+    return {
+      ...state,
+      ...clearPending,
+      register: deletedText,
+      registerType: 'char',
+      lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+    }
+  }
+
+  return {
+    ...state,
+    ...clearPending,
+    buffer: newBuffer,
+    cursor: { row: range.startRow, col: newCursorCol },
+    register: deletedText,
+    registerType: 'char',
+    mode: operator === 'c' ? 'insert' : 'normal',
+    insertedText: operator === 'c' ? '' : state.insertedText,
+    lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+  }
 }
 
 // ─── Normal mode ─────────────────────────────────────────────────────────────
@@ -671,6 +1046,18 @@ function processKeyNormal(state: VimState, key: string): VimState {
       const till = pending === 't' || pending === 'T'
       return executeFindMotion(state, key, direction, till)
     }
+
+    // Text object pending: operator + scope ('i'/'a') + delimiter key
+    if ((pending === 'i' || pending === 'a') && state.pendingOperator !== null) {
+      const op = state.pendingOperator as 'd' | 'c' | 'y'
+      const scope: 'inner' | 'outer' = pending === 'i' ? 'inner' : 'outer'
+      return executeTextObject(
+        { ...state, pendingMotion: [], pendingOperator: null, pendingCount: null },
+        op,
+        scope,
+        key,
+      )
+    }
   }
 
   // Operator pending: next key is the motion (or same key for linewise)
@@ -688,6 +1075,11 @@ function processKeyNormal(state: VimState, key: string): VimState {
     // Same key twice = linewise (dd, yy, cc)
     if (key === op) {
       return executeOperator({ ...state, pendingCount: null }, op, op, 1)
+    }
+
+    // Text object scope: 'i' or 'a' followed by delimiter
+    if (key === 'i' || key === 'a') {
+      return { ...state, pendingMotion: [key] }
     }
 
     // Recognized motion keys

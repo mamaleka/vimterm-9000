@@ -4,8 +4,9 @@ import { createPlayerSlice, type PlayerSlice } from './playerSlice'
 import { createProgressSlice, type ProgressSlice } from './progressSlice'
 import { createChallengeSlice, type ChallengeSlice } from './challengeSlice'
 import { createSettingsSlice, type SettingsSlice } from './settingsSlice'
+import { createStatisticsSlice, type StatisticsSlice } from './statisticsSlice'
 
-export type RootStore = PlayerSlice & ProgressSlice & ChallengeSlice & SettingsSlice
+export type RootStore = PlayerSlice & ProgressSlice & ChallengeSlice & SettingsSlice & StatisticsSlice
 
 export const useStore = create<RootStore>()(
   persist(
@@ -14,6 +15,7 @@ export const useStore = create<RootStore>()(
       ...createProgressSlice(...args),
       ...createChallengeSlice(...args),
       ...createSettingsSlice(...args),
+      ...createStatisticsSlice(...args),
     }),
     {
       name: 'vimterm_save_v1',

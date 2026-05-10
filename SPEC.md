@@ -1095,7 +1095,10 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-034 — Zone 2–5 Curriculum Data
-**Status:** `TODO`
+**Status:** `DONE`
+**Started:** 2026-05-10
+**Completed:** 2026-05-10
+**Merged:** 2026-05-10
 **Depends on:** SPEC-022, SPEC-031, SPEC-032, SPEC-033
 **Branch:** `feat/SPEC-034-zones-2-5-curriculum`
 
@@ -1303,7 +1306,7 @@ Unlocked motions glow bright. Locked motions dim. Click a node to see usage coun
 ---
 
 ### SPEC-041 — BossFightScreen
-**Status:** `TODO`
+**Status:** `REVIEW`
 **Depends on:** SPEC-028, SPEC-040, SPEC-025, SPEC-035
 **Branch:** `feat/SPEC-041-boss-fight-screen`
 
@@ -1425,13 +1428,13 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-031 | Operator Motions | DONE | 5 |
 | SPEC-032 | Text Object Motions | DONE | 5 |
 | SPEC-033 | Marks + Jump Motions | DONE | 5 |
-| SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |
+| SPEC-034 | Zones 2–5 Curriculum | DONE | 5 |
 | SPEC-035 | DeleteEnemies + Transform | DONE | 5 |
 | SPEC-036 | SpeedRun Challenge | TODO | 5 |
 | SPEC-037 | Achievements | DONE | 6 |
 | SPEC-038 | SkillTreeScreen | TODO | 6 |
 | SPEC-039 | ProfileScreen | TODO | 6 |
 | SPEC-040 | Boss Data | DONE | 7 |
-| SPEC-041 | BossFightScreen | TODO | 7 |
+| SPEC-041 | BossFightScreen | REVIEW | 7 |
 | SPEC-042 | SettingsScreen | DONE | 8 |
 | SPEC-043 | LessonScreen | DONE | 8 |

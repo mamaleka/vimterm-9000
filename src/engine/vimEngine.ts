@@ -1026,7 +1026,7 @@ const BRACKET_PAIRS: Record<string, { open: string; close: string; dir: 'forward
 
 /**
  * Find the matching bracket for the character at cursor.
- * Returns the column of the match, or null if not found or not on a bracket.
+ * Returns the new position, or null if not found or not on a bracket.
  * Handles nesting correctly by tracking depth.
  */
 function findMatchingBracket(
@@ -1040,36 +1040,27 @@ function findMatchingBracket(
   const pair = BRACKET_PAIRS[ch]
   if (!pair) return null
 
-  if (pair.dir === 'forward') {
-    // Search right for the matching close bracket, counting nesting
-    let depth = 0
-    for (let c = cursor.col; c < line.length; c++) {
-      if (line[c] === pair.open) depth++
-      else if (line[c] === pair.close) {
-        depth--
-        if (depth === 0) return { row: cursor.row, col: c }
-      }
+  let depth = 0
+  const step = pair.dir === 'forward' ? 1 : -1
+  const seekChar = pair.dir === 'forward' ? pair.close : pair.open
+  const nestChar = pair.dir === 'forward' ? pair.open : pair.close
+
+  for (let c = cursor.col; c >= 0 && c < line.length; c += step) {
+    if (line[c] === nestChar) depth++
+    else if (line[c] === seekChar) {
+      depth--
+      if (depth === 0) return { row: cursor.row, col: c }
     }
-    return null
-  } else {
-    // Search left for the matching open bracket, counting nesting
-    let depth = 0
-    for (let c = cursor.col; c >= 0; c--) {
-      if (line[c] === pair.close) depth++
-      else if (line[c] === pair.open) {
-        depth--
-        if (depth === 0) return { row: cursor.row, col: c }
-      }
-    }
-    return null
   }
+  return null
 }
 
 // ─── Paragraph motion helpers ─────────────────────────────────────────────────
 
 /**
  * Move backward to the nearest blank line before the current paragraph.
- * If already on a blank line or at row 0, moves to row 0.
+ * Starting from cursor row, finds the blank line (or row 0) that precedes
+ * the paragraph containing the cursor.
  * Returns the new cursor position (col 0).
  */
 function moveParagraphBackward(
@@ -1077,41 +1068,21 @@ function moveParagraphBackward(
   cursor: { row: number; col: number },
 ): { row: number; col: number } {
   let row = cursor.row
-
-  // If at row 0, stay
   if (row === 0) return { row: 0, col: 0 }
 
-  // If currently on a blank line, move up past any consecutive blank lines
-  // then past the paragraph above, to the blank line before it (or row 0)
+  // If on a blank line, step up past consecutive blanks first
   if (isBlankLine(buffer[row] ?? '')) {
     row--
-    // skip blanks going up
-    while (row > 0 && isBlankLine(buffer[row] ?? '')) {
-      row--
-    }
-    // skip non-blanks going up (the paragraph above)
-    while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) {
-      row--
-    }
-    // Now row is at the first line of that paragraph (or row 0)
-    // Move to the blank line above it (or row 0)
-    if (row > 0) {
-      return { row: row - 1, col: 0 }
-    }
-    return { row: 0, col: 0 }
+    while (row > 0 && isBlankLine(buffer[row] ?? '')) row--
+    // Now on the last line of the paragraph above — skip that paragraph upward
+    while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) row--
+  } else {
+    // On a non-blank line: step up to the start of the current paragraph
+    while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) row--
   }
 
-  // Not on blank line: find the blank line immediately above current paragraph
-  // Step backward to find where the current paragraph starts
-  while (row > 0 && !isBlankLine(buffer[row - 1] ?? '')) {
-    row--
-  }
-  // row is now start of current paragraph
-  // The blank line above (or row 0 if none)
-  if (row > 0) {
-    return { row: row - 1, col: 0 }
-  }
-  return { row: 0, col: 0 }
+  // row is now the first line of a paragraph; the blank line above is row-1
+  return { row: Math.max(0, row - 1), col: 0 }
 }
 
 /**
@@ -1128,34 +1099,19 @@ function moveParagraphForward(
 
   if (row === lastRow) return { row: lastRow, col: 0 }
 
-  // If currently on a blank line, skip to end of following blank lines,
-  // then to the end of the following paragraph, then to the next blank
+  // If on a blank line, step down past consecutive blanks first
   if (isBlankLine(buffer[row] ?? '')) {
     row++
-    // skip blanks going down
-    while (row < lastRow && isBlankLine(buffer[row] ?? '')) {
-      row++
-    }
-    // skip non-blanks going down (the paragraph)
-    while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) {
-      row++
-    }
-    // Now move to the blank line below (or lastRow)
-    if (row < lastRow) {
-      return { row: row + 1, col: 0 }
-    }
-    return { row: lastRow, col: 0 }
+    while (row < lastRow && isBlankLine(buffer[row] ?? '')) row++
+    // Now on the first line of the next paragraph — skip it downward
+    while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) row++
+  } else {
+    // On a non-blank line: step down to the end of the current paragraph
+    while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) row++
   }
 
-  // Not on blank line: find the blank line immediately after current paragraph
-  while (row < lastRow && !isBlankLine(buffer[row + 1] ?? '')) {
-    row++
-  }
-  // row is now end of current paragraph
-  if (row < lastRow) {
-    return { row: row + 1, col: 0 }
-  }
-  return { row: lastRow, col: 0 }
+  // row is now the last line of a paragraph; the blank line below is row+1
+  return { row: Math.min(lastRow, row + 1), col: 0 }
 }
 
 // ─── Word under cursor helper ─────────────────────────────────────────────────

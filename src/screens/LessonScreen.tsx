@@ -32,6 +32,14 @@ function allOtherChallengesComplete(
   return true
 }
 
+function supportsReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
 export function LessonScreen() {
   const currentLesson = useStore((s) => s.currentLesson)
   const currentChallengeId = useStore((s) => s.currentChallengeId)
@@ -48,30 +56,26 @@ export function LessonScreen() {
   const [typewriterDone, setTypewriterDone] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  useEffect(() => {
-    if (!lesson) return
+  const lessonId = lesson?.id
+  const theoryText = lesson?.theoryText ?? ''
 
-    const fullText = lesson.theoryText
+  useEffect(() => {
+    if (!lessonId) return
+
     let index = 0
     setDisplayedText('')
     setTypewriterDone(false)
 
-    // Detect test/reduced-motion environment: matchMedia may not exist in jsdom
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (prefersReducedMotion) {
-      setDisplayedText(fullText)
+    if (supportsReducedMotion()) {
+      setDisplayedText(theoryText)
       setTypewriterDone(true)
       return
     }
 
     intervalRef.current = setInterval(() => {
       index += 1
-      setDisplayedText(fullText.slice(0, index))
-      if (index >= fullText.length) {
+      setDisplayedText(theoryText.slice(0, index))
+      if (index >= theoryText.length) {
         if (intervalRef.current) clearInterval(intervalRef.current)
         setTypewriterDone(true)
       }
@@ -80,7 +84,7 @@ export function LessonScreen() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [lesson])
+  }, [lessonId, theoryText])
 
   if (!lesson || !zone) {
     return (
@@ -100,21 +104,20 @@ export function LessonScreen() {
   const challengeNumber = challengeIndex + 1
   const challengeTotal = challenges.length
 
-  function handleStartPractice() {
+  const handleStartPractice = () => {
     if (challenges.length > 0) {
       setCurrentChallenge(challenges[0].id)
       navigateTo('practice')
     }
   }
 
-  function handleCompleteChallenge() {
+  const handleCompleteChallenge = () => {
     if (!currentChallengeId) return
 
     const isLastChallenge = challengeIndex === challenges.length - 1
     const isLastLesson = isLastLessonInZone(lesson.id, zone)
 
     if (isLastChallenge && isLastLesson) {
-      // Check if all other challenges in the zone are complete
       const allDone = allOtherChallengesComplete(lesson.id, zone, completedChallenges)
       if (allDone) {
         navigateTo('bossFight')

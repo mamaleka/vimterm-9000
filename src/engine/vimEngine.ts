@@ -735,8 +735,7 @@ function findPairTextObject(
   const col = cursor.col
 
   if (open === close) {
-    // Quote handling: scan the current line
-    return findQuoteTextObject(line, col, open)
+    return findQuoteTextObject(line, cursor.row, col, open)
   }
 
   // Bracket handling: find innermost enclosing pair by walking left to find '('
@@ -792,35 +791,27 @@ function findPairTextObject(
 
 /**
  * Find inner range for quote text objects on a single line.
- * Scans left from cursor to find the nearest quote, then right for the matching one.
+ * Pairs up consecutive quote positions; returns the range that contains cursor.
  * If cursor is outside any pair, returns null.
  */
 function findQuoteTextObject(
   line: string,
+  row: number,
   col: number,
   quote: string,
 ): TextObjectRange | null {
-  // Find all quote positions on the line
   const positions: number[] = []
   for (let i = 0; i < line.length; i++) {
     if (line[i] === quote) positions.push(i)
   }
 
-  // Need at least 2 quotes to form a pair
   if (positions.length < 2) return null
 
-  // Build pairs: [positions[0],positions[1]], [positions[2],positions[3]], ...
   for (let i = 0; i + 1 < positions.length; i += 2) {
     const openQ = positions[i]!
     const closeQ = positions[i + 1]!
-    // Cursor must be inside or on the quotes
     if (col >= openQ && col <= closeQ) {
-      return {
-        startRow: 0, // will be replaced with actual row by caller
-        startCol: openQ + 1,
-        endRow: 0,
-        endCol: closeQ,
-      }
+      return { startRow: row, startCol: openQ + 1, endRow: row, endCol: closeQ }
     }
   }
 
@@ -859,6 +850,36 @@ function findParagraphBounds(
 }
 
 /**
+ * Delete a range of lines from buffer and build the resulting VimState.
+ * Used by both `dip` and `dap`.
+ */
+function applyLinewiseDelete(
+  state: VimState,
+  operator: 'd' | 'c' | 'y',
+  motionName: string,
+  delStart: number,
+  delEnd: number,
+): VimState {
+  const newBuffer = [...state.buffer]
+  const deleted = newBuffer.splice(delStart, delEnd - delStart + 1)
+  const finalBuffer = newBuffer.length === 0 ? [''] : newBuffer
+  const newRow = Math.min(delStart, finalBuffer.length - 1)
+  return {
+    ...state,
+    pendingOperator: null,
+    pendingCount: null,
+    pendingMotion: [],
+    buffer: finalBuffer,
+    cursor: { row: newRow, col: 0 },
+    register: deleted.join('\n'),
+    registerType: 'line',
+    mode: operator === 'c' ? 'insert' : 'normal',
+    insertedText: operator === 'c' ? '' : state.insertedText,
+    lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
+  }
+}
+
+/**
  * Execute a text object operation: operator + scope ('inner'|'outer') + delimiter.
  * Returns the new state after applying the operator.
  */
@@ -877,49 +898,15 @@ function executeTextObject(
     const { paraStart, paraEnd } = findParagraphBounds(buffer, cursor.row)
 
     if (scope === 'inner') {
-      // dip: delete all lines from paraStart to paraEnd inclusive
-      const newBuffer = [...buffer]
-      const deleted = newBuffer.splice(paraStart, paraEnd - paraStart + 1)
-      // If buffer is now empty, insert one empty line
-      const finalBuffer = newBuffer.length === 0 ? [''] : newBuffer
-      const newRow = Math.min(paraStart, finalBuffer.length - 1)
-      return {
-        ...state,
-        ...clearPending,
-        buffer: finalBuffer,
-        cursor: { row: newRow, col: 0 },
-        register: deleted.join('\n'),
-        registerType: 'line',
-        mode: operator === 'c' ? 'insert' : 'normal',
-        insertedText: operator === 'c' ? '' : state.insertedText,
-        lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
-      }
-    } else {
-      // dap: delete paragraph + trailing blank lines (or leading if no trailing)
-      let delStart = paraStart
-      let delEnd = paraEnd
-
-      // Consume trailing blank lines (preferred)
-      while (delEnd + 1 < buffer.length && isBlankLine(buffer[delEnd + 1] ?? '')) {
-        delEnd++
-      }
-
-      const newBuffer = [...buffer]
-      const deleted = newBuffer.splice(delStart, delEnd - delStart + 1)
-      const finalBuffer = newBuffer.length === 0 ? [''] : newBuffer
-      const newRow = Math.min(delStart, finalBuffer.length - 1)
-      return {
-        ...state,
-        ...clearPending,
-        buffer: finalBuffer,
-        cursor: { row: newRow, col: 0 },
-        register: deleted.join('\n'),
-        registerType: 'line',
-        mode: operator === 'c' ? 'insert' : 'normal',
-        insertedText: operator === 'c' ? '' : state.insertedText,
-        lastAction: { type: 'operator', operator, motion: motionName, count: 1 },
-      }
+      return applyLinewiseDelete(state, operator, motionName, paraStart, paraEnd)
     }
+
+    // dap: delete paragraph + trailing blank lines
+    let delEnd = paraEnd
+    while (delEnd + 1 < buffer.length && isBlankLine(buffer[delEnd + 1] ?? '')) {
+      delEnd++
+    }
+    return applyLinewiseDelete(state, operator, motionName, paraStart, delEnd)
   }
 
   // ── Word text objects (iw / aw) ───────────────────────────────────────────
@@ -976,13 +963,10 @@ function executeTextObject(
     return { ...state, ...clearPending }
   }
 
-  let range = findPairTextObject(buffer, cursor, pair.open, pair.close)
+  const range = findPairTextObject(buffer, cursor, pair.open, pair.close)
   if (range === null) {
     return { ...state, ...clearPending }
   }
-
-  // Fix row for quote text objects (findQuoteTextObject returns row 0)
-  range = { ...range, startRow: cursor.row, endRow: cursor.row }
 
   const line = buffer[range.startRow] ?? ''
   const deletedText = line.slice(range.startCol, range.endCol)

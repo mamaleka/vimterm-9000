@@ -94,4 +94,15 @@ describe('WorldMapScreen', () => {
     const wrapper = container.querySelector('.bg-crt-bg')
     expect(wrapper).not.toBeNull()
   })
+
+  it('renders BACK button', () => {
+    render(<WorldMapScreen />)
+    expect(screen.getByTestId('back-button')).toBeInTheDocument()
+  })
+
+  it('clicking BACK button calls navigateTo("home")', () => {
+    render(<WorldMapScreen />)
+    fireEvent.click(screen.getByTestId('back-button'))
+    expect(mockNavigateTo).toHaveBeenCalledWith('home')
+  })
 })

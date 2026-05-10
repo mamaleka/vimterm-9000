@@ -8,6 +8,13 @@ interface Props {
   mode: VimMode
 }
 
+const MODE_SHAPE: Record<VimMode, string> = {
+  normal:  'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
+  visual:  'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
+  command: 'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
+  insert:  'w-0.5 h-[1em] bg-crt-cursor',
+}
+
 export function CursorOverlay({ cursor, mode }: Props) {
   const [visible, setVisible] = useState(true)
 
@@ -25,18 +32,13 @@ export function CursorOverlay({ cursor, mode }: Props) {
     return null
   }
 
-  const isInsert = mode === 'insert'
-
   return (
     <span
       data-testid="cursor-overlay"
       data-mode={mode}
       className={[
-        'absolute',
-        'pointer-events-none',
-        isInsert
-          ? 'w-0.5 h-[1em] bg-crt-cursor'
-          : 'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
+        'absolute pointer-events-none',
+        MODE_SHAPE[mode],
         visible ? 'opacity-100' : 'opacity-0',
       ].join(' ')}
       style={{

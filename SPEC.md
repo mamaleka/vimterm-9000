@@ -1346,11 +1346,11 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-013 | Motion Parser | REVIEW | 1 |
 | SPEC-014 | useKeyCapture Hook | REVIEW | 1 |
 | SPEC-015 | useVimEngine Hook | REVIEW | 1 |
-| SPEC-016 | EditorBuffer Component | REVIEW | 2 |
+| SPEC-016 | EditorBuffer Component | DONE | 2 |
 | SPEC-017 | CursorOverlay Component | TODO | 2 |
-| SPEC-018 | LineNumbers + StatusBar | REVIEW | 2 |
+| SPEC-018 | LineNumbers + StatusBar | DONE | 2 |
 | SPEC-019 | VimEditor Compose | TODO | 2 |
-| SPEC-020 | HintPanel + KeyHistory | REVIEW | 2 |
+| SPEC-020 | HintPanel + KeyHistory | DONE | 2 |
 | SPEC-021 | Challenge Validator | REVIEW | 3 |
 | SPEC-022 | Zone 1 Curriculum Data | REVIEW | 3 |
 | SPEC-023 | XP + Level Utils | REVIEW | 3 |
@@ -1358,7 +1358,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-025 | ReachTarget Challenge | TODO | 3 |
 | SPEC-026 | PracticeScreen | TODO | 3 |
 | SPEC-027 | ChallengeCompleteScreen | TODO | 3 |
-| SPEC-028 | Custom Router | REVIEW | 4 |
+| SPEC-028 | Custom Router | DONE | 4 |
 | SPEC-029 | WorldMapScreen | TODO | 4 |
 | SPEC-030 | HUD + XPBar | TODO | 4 |
 | SPEC-031 | Operator Motions | TODO | 5 |

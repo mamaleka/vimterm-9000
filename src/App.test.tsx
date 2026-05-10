@@ -27,10 +27,11 @@ describe('App', () => {
     expect(screen.queryByText('VIMTERM-9000')).not.toBeInTheDocument()
   })
 
-  it('renders placeholder for worldMap screen when currentScreen is worldMap', () => {
+  it('renders WorldMapScreen when currentScreen is worldMap', () => {
     useStore.setState({ currentScreen: 'worldMap' })
     render(<App />)
-    expect(screen.getByTestId('screen-placeholder-worldMap')).toBeInTheDocument()
+    expect(screen.getByTestId('zone-1')).toBeInTheDocument()
+    expect(screen.queryByTestId('screen-placeholder-worldMap')).not.toBeInTheDocument()
   })
 
   it('renders placeholder for settings screen when currentScreen is settings', () => {

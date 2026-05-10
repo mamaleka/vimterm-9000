@@ -171,4 +171,44 @@ describe('BossFightScreen', () => {
     act(() => { fireEvent.click(retreatBtn) })
     expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
   })
+
+  it('FORFEIT button renders during active boss fight', () => {
+    render(<BossFightScreen />)
+    expect(screen.getByTestId('forfeit-button')).toBeInTheDocument()
+  })
+
+  it('clicking FORFEIT calls navigateTo with worldMap', () => {
+    render(<BossFightScreen />)
+    const forfeitBtn = screen.getByTestId('forfeit-button')
+    act(() => { fireEvent.click(forfeitBtn) })
+    expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
+  })
+
+  it('forfeiting does NOT call defeatBoss', () => {
+    render(<BossFightScreen />)
+    const forfeitBtn = screen.getByTestId('forfeit-button')
+    act(() => { fireEvent.click(forfeitBtn) })
+    expect(mockDefeatBoss).not.toHaveBeenCalled()
+  })
+
+  it('forfeit button is NOT shown on victory screen', () => {
+    render(<BossFightScreen />)
+    act(() => { capturedCallbacks.onStageCleared() })
+    act(() => { capturedCallbacks.onStageCleared() })
+    act(() => { capturedCallbacks.onStageCleared() })
+    act(() => { capturedCallbacks.onStageCleared() })
+
+    expect(screen.getByTestId('boss-fight-victory')).toBeInTheDocument()
+    expect(screen.queryByTestId('forfeit-button')).not.toBeInTheDocument()
+  })
+
+  it('forfeit button is NOT shown on defeat screen', () => {
+    render(<BossFightScreen />)
+    act(() => { capturedCallbacks.onHeartLost() })
+    act(() => { capturedCallbacks.onHeartLost() })
+    act(() => { capturedCallbacks.onHeartLost() })
+
+    expect(screen.getByTestId('boss-fight-defeat')).toBeInTheDocument()
+    expect(screen.queryByTestId('forfeit-button')).not.toBeInTheDocument()
+  })
 })

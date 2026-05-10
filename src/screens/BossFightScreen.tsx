@@ -142,6 +142,17 @@ export function BossFightScreen() {
           </div>
         </div>
 
+        {/* Forfeit button */}
+        <div className="flex justify-end">
+          <button
+            data-testid="forfeit-button"
+            onClick={() => navigateTo('worldMap')}
+            className="border border-crt-border text-crt-red px-4 py-2 font-mono hover:bg-crt-surface transition-colors"
+          >
+            FORFEIT
+          </button>
+        </div>
+
         {/* Boss health bar */}
         <HealthBar current={bossHealthCurrent} max={totalStages} label="BOSS HP" />
 

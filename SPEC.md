@@ -1115,8 +1115,9 @@ Unlocked zones are bright and clickable. Clicking an unlocked zone navigates to 
 ---
 
 ### SPEC-035 — DeleteEnemies and Transform Challenge Components
-**Status:** `IN PROGRESS`
+**Status:** `REVIEW`
 **Started:** 2026-05-10
+**Completed:** 2026-05-10
 **Depends on:** SPEC-019, SPEC-021, SPEC-031, SPEC-032
 **Branch:** `feat/SPEC-035-delete-enemies-transform`
 
@@ -1412,7 +1413,7 @@ then launches 3–5 scaffolded challenges from the lesson's challenge list.
 | SPEC-032 | Text Object Motions | DONE | 5 |
 | SPEC-033 | Marks + Jump Motions | TODO | 5 |
 | SPEC-034 | Zones 2–5 Curriculum | TODO | 5 |
-| SPEC-035 | DeleteEnemies + Transform | IN PROGRESS | 5 |
+| SPEC-035 | DeleteEnemies + Transform | REVIEW | 5 |
 | SPEC-036 | SpeedRun Challenge | TODO | 5 |
 | SPEC-037 | Achievements | DONE | 6 |
 | SPEC-038 | SkillTreeScreen | TODO | 6 |

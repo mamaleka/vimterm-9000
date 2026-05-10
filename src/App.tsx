@@ -1,18 +1,18 @@
 import { HomeScreen } from './screens/HomeScreen'
 import { WorldMapScreen } from './screens/WorldMapScreen'
+import { SkillTreeScreen } from './screens/SkillTreeScreen'
+import { LessonScreen } from './screens/LessonScreen'
+import { PracticeScreen } from './screens/PracticeScreen'
+import { BossFightScreen } from './screens/BossFightScreen'
+import { ProfileScreen } from './screens/ProfileScreen'
+import SettingsScreen from './screens/SettingsScreen'
+import ChallengeCompleteScreen from './screens/ChallengeCompleteScreen'
 import { useStore } from './store'
-import type { Screen } from './store/challengeSlice'
-
-function ScreenPlaceholder({ name }: { name: Screen }) {
-  return (
-    <div data-testid={`screen-placeholder-${name}`} className="flex items-center justify-center min-h-screen text-crt-text font-terminal">
-      Coming soon
-    </div>
-  )
-}
 
 export default function App() {
   const currentScreen = useStore((s) => s.currentScreen)
+  const navigateTo = useStore((s) => s.navigateTo)
+  const pendingChallengeResult = useStore((s) => s.pendingChallengeResult)
 
   switch (currentScreen) {
     case 'home':
@@ -20,18 +20,30 @@ export default function App() {
     case 'worldMap':
       return <WorldMapScreen />
     case 'skillTree':
-      return <ScreenPlaceholder name="skillTree" />
+      return <SkillTreeScreen />
     case 'lesson':
-      return <ScreenPlaceholder name="lesson" />
+      return <LessonScreen />
     case 'practice':
-      return <ScreenPlaceholder name="practice" />
+      return <PracticeScreen />
     case 'bossFight':
-      return <ScreenPlaceholder name="bossFight" />
+      return <BossFightScreen />
     case 'profile':
-      return <ScreenPlaceholder name="profile" />
+      return <ProfileScreen />
     case 'settings':
-      return <ScreenPlaceholder name="settings" />
+      return <SettingsScreen />
     case 'challengeComplete':
-      return <ScreenPlaceholder name="challengeComplete" />
+      if (!pendingChallengeResult) return <PracticeScreen />
+      return (
+        <ChallengeCompleteScreen
+          xpEarned={pendingChallengeResult.xpEarned}
+          stars={pendingChallengeResult.stars}
+          keystrokes={pendingChallengeResult.keystrokes}
+          timeMs={pendingChallengeResult.timeMs}
+          parTime={pendingChallengeResult.parTime}
+          firstCompletion={pendingChallengeResult.firstCompletion}
+          streakDays={pendingChallengeResult.streakDays}
+          onContinue={() => navigateTo('worldMap')}
+        />
+      )
   }
 }

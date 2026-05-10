@@ -20,10 +20,9 @@ describe('App', () => {
     expect(screen.getByText('VIMTERM-9000')).toBeInTheDocument()
   })
 
-  it('renders placeholder for practice screen when currentScreen is practice', () => {
+  it('renders PracticeScreen when currentScreen is practice', () => {
     useStore.setState({ currentScreen: 'practice' })
     render(<App />)
-    expect(screen.getByTestId('screen-placeholder-practice')).toBeInTheDocument()
     expect(screen.queryByText('VIMTERM-9000')).not.toBeInTheDocument()
   })
 
@@ -31,19 +30,48 @@ describe('App', () => {
     useStore.setState({ currentScreen: 'worldMap' })
     render(<App />)
     expect(screen.getByTestId('zone-1')).toBeInTheDocument()
-    expect(screen.queryByTestId('screen-placeholder-worldMap')).not.toBeInTheDocument()
   })
 
-  it('renders placeholder for settings screen when currentScreen is settings', () => {
+  it('renders SettingsScreen when currentScreen is settings', () => {
     useStore.setState({ currentScreen: 'settings' })
     render(<App />)
-    expect(screen.getByTestId('screen-placeholder-settings')).toBeInTheDocument()
+    expect(screen.getByTestId('export-textarea')).toBeInTheDocument()
   })
 
-  it('renders placeholder for challengeComplete screen when currentScreen is challengeComplete', () => {
-    useStore.setState({ currentScreen: 'challengeComplete' })
+  it('renders ChallengeCompleteScreen when currentScreen is challengeComplete and result is set', () => {
+    useStore.setState({
+      currentScreen: 'challengeComplete',
+      pendingChallengeResult: {
+        xpEarned: 100,
+        stars: 2,
+        keystrokes: 10,
+        timeMs: 3000,
+        parTime: 5000,
+        firstCompletion: false,
+        streakDays: 0,
+      },
+    })
     render(<App />)
-    expect(screen.getByTestId('screen-placeholder-challengeComplete')).toBeInTheDocument()
+    expect(screen.getByText(/MISSION COMPLETE/i)).toBeInTheDocument()
+  })
+
+  it('renders BossFightScreen when currentScreen is bossFight', () => {
+    useStore.setState({ currentScreen: 'bossFight' })
+    render(<App />)
+    // BossFightScreen renders something — just confirm it doesn't crash
+    expect(screen.queryByText('VIMTERM-9000')).not.toBeInTheDocument()
+  })
+
+  it('renders ProfileScreen when currentScreen is profile', () => {
+    useStore.setState({ currentScreen: 'profile' })
+    render(<App />)
+    expect(screen.getByTestId('player-card')).toBeInTheDocument()
+  })
+
+  it('renders SkillTreeScreen when currentScreen is skillTree', () => {
+    useStore.setState({ currentScreen: 'skillTree' })
+    render(<App />)
+    expect(screen.getByTestId('back-button')).toBeInTheDocument()
   })
 })
 
@@ -76,11 +104,10 @@ describe('navigateTo action', () => {
     // Initially shows HomeScreen
     expect(screen.getByText('VIMTERM-9000')).toBeInTheDocument()
 
-    // After navigating to practice, placeholder shown
+    // After navigating to practice, PracticeScreen shown
     act(() => {
       useStore.setState({ currentScreen: 'practice' })
     })
-    expect(screen.getByTestId('screen-placeholder-practice')).toBeInTheDocument()
     expect(screen.queryByText('VIMTERM-9000')).not.toBeInTheDocument()
   })
 })

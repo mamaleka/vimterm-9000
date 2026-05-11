@@ -126,9 +126,9 @@ describe('SkillTreeScreen', () => {
     expect(within(screen.getByTestId('motion-tooltip')).getByText('30')).toBeInTheDocument()
   })
 
-  it('back button navigates to worldMap', () => {
+  it('back button navigates to home', () => {
     render(<SkillTreeScreen />)
     fireEvent.click(screen.getByTestId('back-button'))
-    expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
+    expect(mockNavigateTo).toHaveBeenCalledWith('home')
   })
 })

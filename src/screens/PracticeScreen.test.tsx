@@ -104,6 +104,21 @@ describe('PracticeScreen', () => {
       level: 1,
       streak: { current: 0, longest: 0, lastActivityDate: '', graceUsed: false },
       completedChallenges: {},
+      statistics: {
+        totalTimeSpent: 0,
+        totalKeystrokesRecorded: 0,
+        motionUseCounts: {},
+        dailyActivity: {},
+        arrowKeyPresses: 0,
+        sessionDotRepeatCount: 0,
+        speedChallengesUnderPar: 0,
+        perfectAccuracyChallenges: 0,
+        grammarCombosUsed: 0,
+        countPrefixUses: 0,
+        ggGUseCounts: 0,
+        lateNightChallenges: 0,
+        firstDeleteChallengeCompleted: false,
+      },
     })
   })
 
@@ -191,5 +206,30 @@ describe('PracticeScreen', () => {
       })
       expect(useStore.getState().currentScreen).toBe('worldMap')
     })
+  })
+
+  it('records keystrokes in statistics on challenge success', () => {
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+    expect(useStore.getState().statistics.totalKeystrokesRecorded).toBe(5)
+  })
+
+  it('records time spent in statistics on challenge success', () => {
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+    expect(useStore.getState().statistics.totalTimeSpent).toBe(5)
+  })
+
+  it('records daily activity on challenge success', () => {
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+    const today = new Date().toISOString().slice(0, 10)
+    expect(useStore.getState().statistics.dailyActivity[today]).toBe(1)
   })
 })

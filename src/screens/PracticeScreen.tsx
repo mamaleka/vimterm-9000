@@ -47,6 +47,9 @@ export function PracticeScreen() {
   const navigateTo = useStore((s) => s.navigateTo)
   const recordArrowKeyPress = useStore((s) => s.recordArrowKeyPress)
   const setPendingChallengeResult = useStore((s) => s.setPendingChallengeResult)
+  const recordKeystrokes = useStore((s) => s.recordKeystrokes)
+  const addTimeSpent = useStore((s) => s.addTimeSpent)
+  const recordDailyActivity = useStore((s) => s.recordDailyActivity)
 
   const [arrowWarning, setArrowWarning] = useState(false)
   const [keyHistory] = useState<string[]>([])
@@ -73,6 +76,10 @@ export function PracticeScreen() {
         xpEarned: amount,
       }
       completeChallenge(challenge.id, result)
+      recordKeystrokes(keystrokes)
+      addTimeSpent(Math.round(timeMs / 1000))
+      const today = new Date().toISOString().slice(0, 10)
+      recordDailyActivity(today)
       setPendingChallengeResult({
         xpEarned: amount,
         stars,
@@ -84,7 +91,7 @@ export function PracticeScreen() {
       })
       navigateTo('challengeComplete')
     },
-    [challenge, completedChallenges, streak.current, addXP, completeChallenge, navigateTo, setPendingChallengeResult],
+    [challenge, completedChallenges, streak.current, addXP, completeChallenge, navigateTo, setPendingChallengeResult, recordKeystrokes, addTimeSpent, recordDailyActivity],
   )
 
   const handleArrowKeyPress = useCallback(() => {

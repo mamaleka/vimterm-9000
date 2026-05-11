@@ -32,7 +32,7 @@ export function SkillTreeScreen() {
           <h1 className="text-crt-bright text-xl font-mono">SKILL TREE</h1>
           <button
             data-testid="back-button"
-            onClick={() => navigateTo('worldMap')}
+            onClick={() => navigateTo('home')}
             className="text-crt-text font-mono border border-crt-border px-3 py-1 hover:text-crt-bright"
           >
             ← BACK
@@ -41,8 +41,8 @@ export function SkillTreeScreen() {
 
         {tooltip && (
           <div data-testid="motion-tooltip" className="mb-4 border border-crt-border bg-crt-surface p-3 font-mono">
-            <span className="text-crt-amber">{tooltip.motion}</span>
-            <span className="text-crt-text ml-2">uses: </span>
+            <span className="text-crt-amber">{tooltip.motion}</span>{' '}
+            <span className="text-crt-text">uses: </span>
             <span className="text-crt-bright">{tooltip.count}</span>
           </div>
         )}

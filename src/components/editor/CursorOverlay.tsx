@@ -9,10 +9,10 @@ interface Props {
 }
 
 const MODE_SHAPE: Record<VimMode, string> = {
-  normal:  'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
-  visual:  'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
-  command: 'w-[1ch] h-[1em] bg-crt-cursor mix-blend-difference',
-  insert:  'w-0.5 h-[1em] bg-crt-cursor',
+  normal:  'w-[1ch] h-[1.25em] bg-crt-amber opacity-75',
+  visual:  'w-[1ch] h-[1.25em] bg-crt-amber opacity-75',
+  command: 'w-[1ch] h-[1.25em] bg-crt-amber opacity-75',
+  insert:  'w-0.5 h-[1.25em] bg-crt-cursor',
 }
 
 export function CursorOverlay({ cursor, mode }: Props) {
@@ -42,7 +42,7 @@ export function CursorOverlay({ cursor, mode }: Props) {
         visible ? 'opacity-100' : 'opacity-0',
       ].join(' ')}
       style={{
-        top: `${cursor.row}em`,
+        top: `calc(${cursor.row} * 1.25em)`,
         left: `${cursor.col}ch`,
       }}
     />

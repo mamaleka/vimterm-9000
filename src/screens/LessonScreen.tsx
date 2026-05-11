@@ -101,9 +101,6 @@ export function LessonScreen() {
     ? challenges.findIndex((c) => c.id === currentChallengeId)
     : -1
 
-  const challengeNumber = challengeIndex + 1
-  const challengeTotal = challenges.length
-
   const handleStartPractice = () => {
     if (challenges.length > 0) {
       setCurrentChallenge(challenges[0].id)
@@ -174,10 +171,27 @@ export function LessonScreen() {
           </p>
         </div>
 
-        {/* Challenge progress (only shown when a challenge is active) */}
+        {/* Challenge progress list */}
         {challengeIndex >= 0 && (
-          <div className="text-crt-text font-mono text-sm tracking-widest">
-            Challenge {challengeNumber} of {challengeTotal}
+          <div className="flex flex-col gap-1">
+            {challenges.map((c, idx) => {
+              const done = c.id in completedChallenges
+              const isCurrent = c.id === currentChallengeId
+              return (
+                <div
+                  key={c.id}
+                  className={[
+                    'font-mono text-xs flex items-center gap-2',
+                    isCurrent ? 'text-crt-bright' : 'text-crt-dim',
+                  ].join(' ')}
+                >
+                  <span data-testid={`challenge-status-${c.id}`}>
+                    {done ? '✓' : '○'}
+                  </span>
+                  <span>Challenge {idx + 1} of {challenges.length}</span>
+                </div>
+              )
+            })}
           </div>
         )}
 
@@ -191,7 +205,7 @@ export function LessonScreen() {
             START PRACTICE
           </button>
 
-          {challengeIndex >= 0 && (
+          {challengeIndex >= 0 && currentChallengeId && currentChallengeId in completedChallenges && (
             <button
               type="button"
               onClick={handleCompleteChallenge}

@@ -101,7 +101,7 @@ describe('LessonScreen', () => {
 
   it('navigates to challengeComplete when last challenge is complete and zone not done', async () => {
     defaultStoreState.currentChallengeId = 'z1l1c3'
-    defaultStoreState.completedChallenges = {}
+    defaultStoreState.completedChallenges = { z1l1c3: {} }
     render(<LessonScreen />)
 
     const btn = screen.getByRole('button', { name: /complete challenge/i })
@@ -124,6 +124,7 @@ describe('LessonScreen', () => {
       z1l3c1: {},
       z1l3c2: {},
       z1l4c1: {},
+      z1l4c2: {},
     } as Record<string, unknown>
 
     render(<LessonScreen />)
@@ -149,5 +150,33 @@ describe('LessonScreen', () => {
     await user.click(backBtn)
 
     expect(mockNavigateTo).toHaveBeenCalledWith('worldMap')
+  })
+
+  it('does not show COMPLETE CHALLENGE when the current challenge is not yet completed', () => {
+    defaultStoreState.currentChallengeId = 'z1l1c1'
+    defaultStoreState.completedChallenges = {}
+    render(<LessonScreen />)
+    expect(screen.queryByRole('button', { name: /complete challenge/i })).toBeNull()
+  })
+
+  it('shows COMPLETE CHALLENGE when the current challenge has been completed', () => {
+    defaultStoreState.currentChallengeId = 'z1l1c1'
+    defaultStoreState.completedChallenges = { z1l1c1: {} }
+    render(<LessonScreen />)
+    expect(screen.getByRole('button', { name: /complete challenge/i })).toBeInTheDocument()
+  })
+
+  it('shows a checkmark next to a completed challenge in the list', () => {
+    defaultStoreState.currentChallengeId = 'z1l1c2'
+    defaultStoreState.completedChallenges = { z1l1c1: {} }
+    render(<LessonScreen />)
+    expect(screen.getByTestId('challenge-status-z1l1c1')).toHaveTextContent('✓')
+  })
+
+  it('shows a pending marker next to an incomplete challenge in the list', () => {
+    defaultStoreState.currentChallengeId = 'z1l1c1'
+    defaultStoreState.completedChallenges = {}
+    render(<LessonScreen />)
+    expect(screen.getByTestId('challenge-status-z1l1c1')).not.toHaveTextContent('✓')
   })
 })

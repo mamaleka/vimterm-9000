@@ -88,6 +88,17 @@ export function WorldMapScreen() {
   const completedLessons = useStore((s) => s.completedLessons)
   const setCurrentLesson = useStore((s) => s.setCurrentLesson)
 
+  const zoneProgress = ALL_ZONES.reduce<Record<string, { completed: number; total: number }>>(
+    (acc, zone) => {
+      acc[zone.id] = {
+        total: zone.lessons.length,
+        completed: zone.lessons.filter((l) => l.id in completedLessons).length,
+      }
+      return acc
+    },
+    {},
+  )
+
   return (
     <TerminalWindow>
       <div className="flex flex-col items-center min-h-screen p-8 gap-2">
@@ -107,6 +118,7 @@ export function WorldMapScreen() {
         <div className="flex flex-col gap-4 w-full max-w-2xl">
           {ZONES.map((zone) => {
             const isUnlocked = unlockedZones.includes(zone.id)
+            const progress = zoneProgress[zone.id]
 
             return (
               <button
@@ -146,6 +158,15 @@ export function WorldMapScreen() {
                 <div className="text-xs mt-1 text-crt-dim">
                   {zone.lessons}
                 </div>
+
+                {isUnlocked && progress && (
+                  <div
+                    data-testid={`zone-${zone.zoneNumber}-progress`}
+                    className="text-xs mt-2 text-crt-text"
+                  >
+                    {progress.completed}/{progress.total} LESSONS
+                  </div>
+                )}
 
                 {!isUnlocked && (
                   <div className="text-xs mt-2 tracking-widest">

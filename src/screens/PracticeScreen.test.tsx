@@ -232,4 +232,63 @@ describe('PracticeScreen', () => {
     const today = new Date().toISOString().slice(0, 10)
     expect(useStore.getState().statistics.dailyActivity[today]).toBe(1)
   })
+
+  it('records motion use in statistics when a key is pressed during practice', () => {
+    render(<PracticeScreen />)
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', bubbles: true }))
+    })
+    expect(useStore.getState().statistics.motionUseCounts['j']).toBe(1)
+  })
+
+  it('does not record arrow keys as motion use', () => {
+    render(<PracticeScreen />)
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+    })
+    expect(useStore.getState().statistics.motionUseCounts['ArrowDown']).toBeUndefined()
+  })
+
+  it('increments streak when completing a challenge the next day', () => {
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().slice(0, 10)
+    useStore.setState({
+      streak: { current: 3, longest: 5, lastActivityDate: yesterdayStr, graceUsed: false },
+    })
+
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+
+    expect(useStore.getState().streak.current).toBe(4)
+  })
+
+  it('resets streak to 1 when completing after a gap of more than one day', () => {
+    useStore.setState({
+      streak: { current: 5, longest: 10, lastActivityDate: '2020-01-01', graceUsed: false },
+    })
+
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+
+    expect(useStore.getState().streak.current).toBe(1)
+  })
+
+  it('does not change streak when completing a challenge twice the same day', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    useStore.setState({
+      streak: { current: 2, longest: 2, lastActivityDate: today, graceUsed: false },
+    })
+
+    render(<PracticeScreen />)
+    act(() => {
+      capturedOnSuccess!(5, 5000)
+    })
+
+    expect(useStore.getState().streak.current).toBe(2)
+  })
 })

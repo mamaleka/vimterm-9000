@@ -150,4 +150,16 @@ describe('WorldMapScreen', () => {
     fireEvent.click(screen.getByTestId('zone-2'))
     expect(mockSetCurrentLesson).not.toHaveBeenCalled()
   })
+
+  it('shows 0/N progress when no lessons completed in a zone', () => {
+    mockCompletedLessons.current = {}
+    render(<WorldMapScreen />)
+    expect(screen.getByTestId('zone-1-progress')).toHaveTextContent('0/')
+  })
+
+  it('shows 1/N progress when one lesson completed in zone 1', () => {
+    mockCompletedLessons.current = { 'zone1-lesson1': { stars: 2, bestTime: 5000, completedAt: '2026-01-01' } }
+    render(<WorldMapScreen />)
+    expect(screen.getByTestId('zone-1-progress')).toHaveTextContent('1/')
+  })
 })

@@ -1,5 +1,22 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useStore } from '../store'
+import type { StreakState } from '../store/playerSlice'
+
+const ARROW_KEYS_SET = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+
+function calcNewStreak(streak: StreakState, today: string): StreakState {
+  if (streak.lastActivityDate === today) return streak
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = yesterday.toISOString().slice(0, 10)
+  const newCurrent = streak.lastActivityDate === yesterdayStr ? streak.current + 1 : 1
+  return {
+    current: newCurrent,
+    longest: Math.max(newCurrent, streak.longest),
+    lastActivityDate: today,
+    graceUsed: false,
+  }
+}
 import { zone1 } from '../data/curriculum'
 import type { Zone } from '../types/curriculum'
 import type { ChallengeDefinition } from '../types/challenge'
@@ -46,10 +63,23 @@ export function PracticeScreen() {
   const completeChallenge = useStore((s) => s.completeChallenge)
   const navigateTo = useStore((s) => s.navigateTo)
   const recordArrowKeyPress = useStore((s) => s.recordArrowKeyPress)
+  const recordMotionUse = useStore((s) => s.recordMotionUse)
+  const updateStreak = useStore((s) => s.updateStreak)
   const setPendingChallengeResult = useStore((s) => s.setPendingChallengeResult)
   const recordKeystrokes = useStore((s) => s.recordKeystrokes)
   const addTimeSpent = useStore((s) => s.addTimeSpent)
   const recordDailyActivity = useStore((s) => s.recordDailyActivity)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (ARROW_KEYS_SET.has(e.key)) return
+      if (e.altKey || e.metaKey) return
+      if (e.ctrlKey && e.key !== 'o' && e.key !== 'i') return
+      recordMotionUse(e.key)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [recordMotionUse])
 
   const [arrowWarning, setArrowWarning] = useState(false)
   const [keyHistory] = useState<string[]>([])
@@ -80,6 +110,7 @@ export function PracticeScreen() {
       addTimeSpent(Math.round(timeMs / 1000))
       const today = new Date().toISOString().slice(0, 10)
       recordDailyActivity(today)
+      updateStreak(calcNewStreak(streak, today))
       setPendingChallengeResult({
         xpEarned: amount,
         stars,
@@ -91,7 +122,7 @@ export function PracticeScreen() {
       })
       navigateTo('challengeComplete')
     },
-    [challenge, completedChallenges, streak.current, addXP, completeChallenge, navigateTo, setPendingChallengeResult, recordKeystrokes, addTimeSpent, recordDailyActivity],
+    [challenge, completedChallenges, streak.current, streak.lastActivityDate, addXP, completeChallenge, navigateTo, setPendingChallengeResult, recordKeystrokes, addTimeSpent, recordDailyActivity, updateStreak],
   )
 
   const handleArrowKeyPress = useCallback(() => {

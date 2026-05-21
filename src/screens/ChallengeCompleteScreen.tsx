@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { TerminalWindow } from '../components/ui/TerminalWindow'
 
 interface Props {
@@ -23,6 +24,12 @@ export default function ChallengeCompleteScreen({
 }: Props) {
   const seconds = (timeMs / 1000).toFixed(2)
   const parSeconds = (parTime / 1000).toFixed(2)
+
+  const continueRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    continueRef.current?.focus()
+  }, [])
 
   return (
     <TerminalWindow>
@@ -94,6 +101,7 @@ export default function ChallengeCompleteScreen({
         </div>
 
         <button
+          ref={continueRef}
           type="button"
           onClick={onContinue}
           className="border border-crt-text text-crt-text font-terminal px-8 py-2 tracking-widest hover:bg-crt-text hover:text-crt-bg transition-colors"

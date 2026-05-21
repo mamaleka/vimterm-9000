@@ -101,6 +101,12 @@ export function LessonScreen() {
     ? challenges.findIndex((c) => c.id === currentChallengeId)
     : -1
 
+  const startPracticeRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    startPracticeRef.current?.focus()
+  }, [lessonId])
+
   const handleStartPractice = () => {
     if (challenges.length > 0) {
       setCurrentChallenge(challenges[0].id)
@@ -198,6 +204,7 @@ export function LessonScreen() {
         {/* Action buttons */}
         <div className="flex gap-4 mt-auto">
           <button
+            ref={startPracticeRef}
             type="button"
             onClick={handleStartPractice}
             className="border border-crt-text text-crt-text font-terminal px-6 py-2 tracking-widest hover:bg-crt-text hover:text-crt-bg transition-colors"
